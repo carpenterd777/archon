@@ -11,17 +11,22 @@ namespace Archon
         public string SessionTitle;
         public int SessionNumber;
 
-        private System.IO.TextWriter outputTextWriter; 
+        private System.IO.TextWriter consoleOut; 
+        private System.IO.TextReader consoleIn;
         private System.Collections.Generic.List<IEntry> entries = new();
         private bool hasWarnedBeforeForceExit = false;
         private bool IsRecordingAudio = false;
 
         /// <summary>
-        /// Prompts the user to input a session title. Returns the session title.
+        /// Prompts the user to input a session title. Returns the session title, and sets
+        /// the session title to the input string.
         /// </summary>
         public string PromptSessionTitle()
         {
-            return default; // Not implemented  
+            consoleOut.WriteLine("Session title: ");
+            string userInput = new InputHelper(consoleIn).GetNextLine();
+            SessionTitle = userInput;
+            return userInput; 
         }
         
         /// <summary>
@@ -114,10 +119,30 @@ namespace Archon
         /// <summary>
         /// Creates a new WriteSessionManager.
         /// </summary>
-        public WriteSessionManager(System.IO.TextWriter consoleOut)
+        public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn)
         {
-            this.outputTextWriter = consoleOut;
+            this.consoleOut = consoleOut;
+            this.consoleIn = consoleIn;
         }
 
+    }
+
+    class OutputHelper
+    {
+        private System.IO.TextWriter consoleOut;
+        public void DisplayLine(string text) => consoleOut.WriteLine(text); 
+        public OutputHelper(System.IO.TextWriter consoleOut)
+        {
+            this.consoleOut = consoleOut;
+        }
+    }
+    class InputHelper
+    {
+        private System.IO.TextReader consoleIn;
+        public string GetNextLine() => consoleIn.ReadLine(); 
+        public InputHelper(System.IO.TextReader consoleIn)
+        {
+            this.consoleIn = consoleIn;
+        }
     }
 }

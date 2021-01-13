@@ -10,10 +10,6 @@ namespace Archon
     {
         public ValueTask ExecuteAsync(IConsole console)
         {
-            WriteSessionManager wsm = new(console.Output);
-            wsm.PromptSessionTitle();
-            wsm.PromptSessionNumber();
-
             return default; //this command is synchronous
         }
     }
