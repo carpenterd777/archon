@@ -23,10 +23,37 @@ namespace Archon
         /// </summary>
         public string PromptSessionTitle()
         {
-            consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
-            string userInput = new InputHelper(consoleIn).GetNextLine();
+            bool userApprovesTitle = false;
+            string userInput = null;
+            
+            while(!userApprovesTitle ||  userInput == null)
+            {
+                consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
+                userInput = consoleIn.ReadLine(); 
+                if (canBeConvertedToInt(userInput))
+                {
+                    consoleOut.WriteLine(MessageStrings.SESSION_TITLE_INT_INPUT);
+                    userApprovesTitle = consoleIn.ReadLine().ToLower() == "y";
+                }
+                else
+                    userApprovesTitle = true;
+            }
+            
             SessionTitle = userInput;
             return userInput; 
+        }
+
+        private bool canBeConvertedToInt(string text)
+        {
+            try
+            {
+                Int32.Parse(text);
+            }
+            catch (FormatException e)
+            {
+                return false;
+            }
+            return true;
         }
         
         /// <summary>

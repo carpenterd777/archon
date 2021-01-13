@@ -35,7 +35,7 @@ namespace Archon.Tests
         [Fact]
         public void Session_title_prompt_displays_a_message()
         {
-            setUp();
+            setUp("The Assault on House Debauch");
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
 
             // Act
@@ -63,7 +63,7 @@ namespace Archon.Tests
         [Fact]
         public void Session_title_prompt_follows_up_if_single_int_input()
         {
-            setUp("99");
+            setUp("99\ny");
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
 
             // Act
@@ -72,7 +72,7 @@ namespace Archon.Tests
             string allOutput = mockConsoleOut.ToString();
             string? followUp = allOutput.Split("\n")[1]; // first one is "Session title: "
 
-            Assert.Equal(MessageStrings.SESSION_TITLE_INT_INPUT + "\n", followUp);
+            Assert.Equal(MessageStrings.SESSION_TITLE_INT_INPUT, followUp);
             tearDown();
         }
 
@@ -102,7 +102,7 @@ namespace Archon.Tests
             string userTitle = wsm.PromptSessionTitle();
 
             string allOutput = mockConsoleOut.ToString();
-            string reprompt = allOutput.Split()[2];
+            string reprompt = allOutput.Split("\n")[2];
 
             Assert.Equal(MessageStrings.SESSION_TITLE_PROMPT, reprompt);
             Assert.Equal("Ginnungagap time", userTitle);
