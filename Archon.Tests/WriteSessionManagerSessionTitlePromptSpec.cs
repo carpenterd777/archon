@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Archon.Tests
 {
-    public class WriteSessionManagerSpec
+    public class WriteSessionManagerSessionTitlePromptSpec
     {
         string mockInput;
         string mockOutput;
