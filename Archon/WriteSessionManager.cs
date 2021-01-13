@@ -23,7 +23,7 @@ namespace Archon
         /// </summary>
         public string PromptSessionTitle()
         {
-            consoleOut.WriteLine("Session title: ");
+            consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
             string userInput = new InputHelper(consoleIn).GetNextLine();
             SessionTitle = userInput;
             return userInput; 
