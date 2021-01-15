@@ -31,10 +31,7 @@ namespace Archon
                 consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
                 userInput = consoleIn.ReadLine(); 
                 if (canBeConvertedToInt(userInput))
-                {
-                    consoleOut.WriteLine(MessageStrings.SESSION_TITLE_INT_INPUT);
-                    userApprovesTitle = consoleIn.ReadLine().ToLower() == "y";
-                }
+                    userApprovesTitle = VerifyIntSessionTitle();
                 else
                     // It is assumed the user approves the title if it was not an int
                     userApprovesTitle = true;
@@ -45,15 +42,22 @@ namespace Archon
         }
 
         /// <summary>
+        /// Verifies with the user that the int that they passed as a session title was intended.
+        /// </summary>
+        public bool VerifyIntSessionTitle()
+        {
+            consoleOut.WriteLine(MessageStrings.SESSION_TITLE_INT_INPUT);
+            return consoleIn.ReadLine().ToLower() == "y";
+        }
+
+        /// <summary>
         /// Indicates whether or not the passed string could be successfully cast to an int.
         /// Null values are marked false.
         /// </summary>
         private bool canBeConvertedToInt(string s)
         {
             if (s == null)
-            {
                 return false;
-            }
 
             try
             {
@@ -80,7 +84,7 @@ namespace Archon
             // Get one line of user input
             string userInput = consoleIn.ReadLine();
             // While user input is not an int or begins with a dash (which may indicate a negative)
-            while (!canBeConvertedToInt(userInput) || userInput[0] == '-')
+            while (!IsValidSessionNumber(userInput))
             {
                 // If user input is empty string
                 if (userInput == "")
@@ -102,9 +106,20 @@ namespace Archon
         /// <summary>
         /// Checks that the input is a valid session number.
         /// </summary>
-        public bool IsValidSessionNumber(string potentialSessionNumber)
+        public bool IsValidSessionNumber(string potentialSessionNumber) => 
+            canBeConvertedToInt(potentialSessionNumber) && int.Parse(potentialSessionNumber) >= 0;
+
+        public void CommandLoop()
         {
-            return default; // Not implemented  
+           System.Console.Clear(); 
+
+           string nextInput;
+           while (true)
+           {
+               consoleOut.Write("> ");
+               nextInput = consoleIn.ReadLine();
+               DispatchWriteSessionAction(nextInput);
+           }
         }
 
         /// <summary>
@@ -121,8 +136,11 @@ namespace Archon
                 case "e":
                     exitUserTextCommand();
                     break;
+                case "exit!":
+                    forceExitUserTextCommand(userTextCommand);
+                    break;
                 case "e!":
-                    forceExitUserTextCommand();
+                    forceExitUserTextCommand(userTextCommand);
                     break;
                 case "tr":
                     toggleRecordUserTextCommand();
@@ -133,8 +151,11 @@ namespace Archon
                 case "q":
                     exitUserTextCommand();
                     break;
+                case "quit!":
+                    forceExitUserTextCommand(userTextCommand);
+                    break;
                 case "q!":
-                    forceExitUserTextCommand();
+                    forceExitUserTextCommand(userTextCommand);
                     break;
                 default:
                     noteUserText(userTextCommand);
@@ -148,16 +169,29 @@ namespace Archon
         /// </summary>
         private void exitUserTextCommand()
         {
-            return; // Not implemented
+            SaveEntries();
+            System.Environment.Exit(0);
+            return; 
         }
         
         /// <summary>
         /// Responds to a command by the user during a write session to exit the session without saving.
         /// Sends a warning to the user the first time they try to force an exit.
         /// </summary>
-        private void forceExitUserTextCommand()
+        private void forceExitUserTextCommand(string exitCommand)
         {
-            return; // Not implemented
+            // If has already warned user about exiting without saving
+            if (hasWarnedBeforeForceExit)
+                System.Environment.Exit(0);
+            // Else the user has not yet warned
+            else
+            {
+                // Warn the user
+                warn(MessageStrings.GetForceExitWarning(exitCommand));
+                
+                // Note that the user has been warned
+                hasWarnedBeforeForceExit = true;
+            }
         }
         
         /// <summary>
@@ -176,6 +210,18 @@ namespace Archon
         private void noteUserText(string note)
         {
             return; // Not implemented
+        }
+
+        public void SaveEntries()
+        {
+            return; // Not implemented
+        }
+
+        private void warn(string text)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Red;
+            consoleOut.WriteLine(text);
+            System.Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>

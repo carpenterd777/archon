@@ -11,5 +11,7 @@ namespace Archon
         public static readonly string SESSION_NUMBER_INVALID_INPUT = 
             "That is not a valid session number. Please input a number, or leave it blank:";
 
+        public static string GetForceExitWarning(string exitCommand) =>
+            $"You are about to exit without saving. Enter {exitCommand} again to confirm.";
     }
 }
