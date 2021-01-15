@@ -26,7 +26,7 @@ namespace Archon
             bool userApprovesTitle = false;
             string userInput = null;
             
-            while(!userApprovesTitle ||  userInput == null)
+            while(!userApprovesTitle || userInput == null)
             {
                 consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
                 userInput = consoleIn.ReadLine(); 
@@ -36,20 +36,34 @@ namespace Archon
                     userApprovesTitle = consoleIn.ReadLine().ToLower() == "y";
                 }
                 else
+                    // It is assumed the user approves the title if it was not an int
                     userApprovesTitle = true;
             }
             
             SessionTitle = userInput;
-            return userInput; 
+            return SessionTitle; 
         }
 
-        private bool canBeConvertedToInt(string text)
+        /// <summary>
+        /// Indicates whether or not the passed string could be successfully cast to an int.
+        /// Null values are marked false.
+        /// </summary>
+        private bool canBeConvertedToInt(string s)
         {
+            if (s == null)
+            {
+                return false;
+            }
+
             try
             {
-                Int32.Parse(text);
+                int.Parse(s);
             }
-            catch (FormatException e)
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (OverflowException)
             {
                 return false;
             }
@@ -61,7 +75,28 @@ namespace Archon
         /// </summary>
         public int PromptSessionNumber()
         {
-            return default; // Not implemented  
+            // Display initial prompt
+            consoleOut.WriteLine(MessageStrings.SESSION_NUMBER_PROMPT);
+            // Get one line of user input
+            string userInput = consoleIn.ReadLine();
+            // While user input is not an int or begins with a dash (which may indicate a negative)
+            while (!canBeConvertedToInt(userInput) || userInput[0] == '-')
+            {
+                // If user input is empty string
+                if (userInput == "")
+                {
+                    SessionNumber = 0;
+                    return 0;
+                }
+                // Reprompt user for session number
+                consoleOut.WriteLine(MessageStrings.SESSION_NUMBER_INVALID_INPUT);
+                // Get new line of user input
+                userInput = consoleIn.ReadLine();
+            }
+            // Set session number field to new session number
+            SessionNumber = int.Parse(userInput);
+            // Return session number
+            return SessionNumber;
         }
 
         /// <summary>
@@ -75,7 +110,7 @@ namespace Archon
         /// <summary>
         /// A transaction center for all of the user text commands or the note input that could be received.
         /// Command values are "exit", "e", "e!", "tr", "quit", "q", and "q!".
-        /// </summary
+        /// </summary>
         public void DispatchWriteSessionAction(string userTextCommand)
         {
             switch(userTextCommand)
@@ -149,26 +184,6 @@ namespace Archon
         public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn)
         {
             this.consoleOut = consoleOut;
-            this.consoleIn = consoleIn;
-        }
-
-    }
-
-    class OutputHelper
-    {
-        private System.IO.TextWriter consoleOut;
-        public void DisplayLine(string text) => consoleOut.WriteLine(text); 
-        public OutputHelper(System.IO.TextWriter consoleOut)
-        {
-            this.consoleOut = consoleOut;
-        }
-    }
-    class InputHelper
-    {
-        private System.IO.TextReader consoleIn;
-        public string GetNextLine() => consoleIn.ReadLine(); 
-        public InputHelper(System.IO.TextReader consoleIn)
-        {
             this.consoleIn = consoleIn;
         }
     }
