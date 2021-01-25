@@ -51,30 +51,6 @@ namespace Archon
         }
 
         /// <summary>
-        /// Indicates whether or not the passed string could be successfully cast to an int.
-        /// Null values are marked false.
-        /// </summary>
-        private bool canBeConvertedToInt(string s)
-        {
-            if (s == null)
-                return false;
-
-            try
-            {
-                int.Parse(s);
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
-            catch (OverflowException)
-            {
-                return false;
-            }
-            return true;
-        }
-        
-        /// <summary>
         /// Prompts the user to input a session number. Returns the session number.
         /// </summary>
         public int PromptSessionNumber()
@@ -108,7 +84,7 @@ namespace Archon
         /// </summary>
         public bool IsValidSessionNumber(string potentialSessionNumber) => 
             canBeConvertedToInt(potentialSessionNumber) && int.Parse(potentialSessionNumber) >= 0;
-
+        
         public void CommandLoop()
         {
            System.Console.Clear(); 
@@ -162,7 +138,36 @@ namespace Archon
                     break;
             }
         }
+    
+        public void SaveEntries()
+        {
+            return; // Not implemented
+        }
 
+        /// <summary>
+        /// Indicates whether or not the passed string could be successfully cast to an int.
+        /// Null values are marked false.
+        /// </summary>
+        private bool canBeConvertedToInt(string s)
+        {
+            if (s == null)
+                return false;
+
+            try
+            {
+                int.Parse(s);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (OverflowException)
+            {
+                return false;
+            }
+            return true;
+        }
+        
         /// <summary>
         /// Responds to a command by the user during a write session to exit the session.
         /// Saves the user's work and exits the program.
@@ -196,7 +201,7 @@ namespace Archon
         
         /// <summary>
         /// Toggles the audio recording functionality. When its toggled off, adds the audio entry to the list of entries.
-        /// Toggles off itself when 3 minutes have passed.
+        /// Toggles off itself when 3 minutes have passed. Indicating the new file's name and recording success when toggled off.
         /// </summary>
         private void toggleRecordUserTextCommand()
         {
@@ -204,16 +209,18 @@ namespace Archon
         }
         
         /// <summary>
-        /// Adds a note entry to the list of all entries. Changes display so that the timestamp is appended to the line the
+        /// Adds a note entry to the list of all entries. Changes display so that the timestamp is prepended to the line the
         /// user pressed <Enter> on.
         /// </summary>
         private void noteUserText(string note)
         {
-            return; // Not implemented
-        }
-
-        public void SaveEntries()
-        {
+            // Create timestamp for this instant
+            Timestamp tsNow = new();
+            // Create a text entry object using note and timestamp
+            TextEntry entry = new(note, tsNow);
+            // Add text entry object to list of all entries
+            entries.Add(entry);
+            // Change display of last line so that timestamp in string form is prepended to it
             return; // Not implemented
         }
 
@@ -223,6 +230,8 @@ namespace Archon
             consoleOut.WriteLine(text);
             System.Console.ForegroundColor = ConsoleColor.White;
         }
+
+        // Constructors
 
         /// <summary>
         /// Creates a new WriteSessionManager.
