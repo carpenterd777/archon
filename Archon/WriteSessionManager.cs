@@ -11,11 +11,11 @@ namespace Archon
         public string SessionTitle;
         public int SessionNumber;
 
-        private System.IO.TextWriter consoleOut; 
-        private System.IO.TextReader consoleIn;
-        private System.Collections.Generic.List<IEntry> entries = new();
-        private bool hasWarnedBeforeForceExit = false;
-        private bool IsRecordingAudio = false;
+        private System.IO.TextWriter _consoleOut; 
+        private System.IO.TextReader _consoleIn;
+        private System.Collections.Generic.List<IEntry> _entries = new();
+        private bool _hasWarnedBeforeForceExit = false;
+        private bool _isRecordingAudio = false;
 
         /// <summary>
         /// Prompts the user to input a session title. Returns the session title, and sets
@@ -28,8 +28,8 @@ namespace Archon
             
             while(!userApprovesTitle || userInput == null)
             {
-                consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
-                userInput = consoleIn.ReadLine(); 
+                _consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
+                userInput = _consoleIn.ReadLine(); 
                 if (canBeConvertedToInt(userInput))
                     userApprovesTitle = VerifyIntSessionTitle();
                 else
@@ -46,8 +46,8 @@ namespace Archon
         /// </summary>
         public bool VerifyIntSessionTitle()
         {
-            consoleOut.WriteLine(MessageStrings.SESSION_TITLE_INT_INPUT);
-            return consoleIn.ReadLine().ToLower() == "y";
+            _consoleOut.WriteLine(MessageStrings.SESSION_TITLE_INT_INPUT);
+            return _consoleIn.ReadLine().ToLower() == "y";
         }
 
         /// <summary>
@@ -56,9 +56,9 @@ namespace Archon
         public int PromptSessionNumber()
         {
             // Display initial prompt
-            consoleOut.WriteLine(MessageStrings.SESSION_NUMBER_PROMPT);
+            _consoleOut.WriteLine(MessageStrings.SESSION_NUMBER_PROMPT);
             // Get one line of user input
-            string userInput = consoleIn.ReadLine();
+            string userInput = _consoleIn.ReadLine();
             // While user input is not an int or begins with a dash (which may indicate a negative)
             while (!IsValidSessionNumber(userInput))
             {
@@ -69,9 +69,9 @@ namespace Archon
                     return 0;
                 }
                 // Reprompt user for session number
-                consoleOut.WriteLine(MessageStrings.SESSION_NUMBER_INVALID_INPUT);
+                _consoleOut.WriteLine(MessageStrings.SESSION_NUMBER_INVALID_INPUT);
                 // Get new line of user input
-                userInput = consoleIn.ReadLine();
+                userInput = _consoleIn.ReadLine();
             }
             // Set session number field to new session number
             SessionNumber = int.Parse(userInput);
@@ -92,8 +92,8 @@ namespace Archon
            string nextInput;
            while (true)
            {
-               consoleOut.Write("> ");
-               nextInput = consoleIn.ReadLine();
+               _consoleOut.Write("> ");
+               nextInput = _consoleIn.ReadLine();
                DispatchWriteSessionAction(nextInput);
            }
         }
@@ -186,7 +186,7 @@ namespace Archon
         private void forceExitUserTextCommand(string exitCommand)
         {
             // If has already warned user about exiting without saving
-            if (hasWarnedBeforeForceExit)
+            if (_hasWarnedBeforeForceExit)
                 System.Environment.Exit(0);
             // Else the user has not yet warned
             else
@@ -195,7 +195,7 @@ namespace Archon
                 warn(MessageStrings.GetForceExitWarning(exitCommand));
                 
                 // Note that the user has been warned
-                hasWarnedBeforeForceExit = true;
+                _hasWarnedBeforeForceExit = true;
             }
         }
         
@@ -219,7 +219,7 @@ namespace Archon
             // Create a text entry object using note and timestamp
             TextEntry entry = new(note, tsNow);
             // Add text entry object to list of all entries
-            entries.Add(entry);
+            _entries.Add(entry);
             // Change display of last line so that timestamp in string form is prepended to it
             return; // Not implemented
         }
@@ -227,7 +227,7 @@ namespace Archon
         private void warn(string text)
         {
             System.Console.ForegroundColor = ConsoleColor.Red;
-            consoleOut.WriteLine(text);
+            _consoleOut.WriteLine(text);
             System.Console.ForegroundColor = ConsoleColor.White;
         }
 
@@ -238,8 +238,8 @@ namespace Archon
         /// </summary>
         public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn)
         {
-            this.consoleOut = consoleOut;
-            this.consoleIn = consoleIn;
+            _consoleOut = consoleOut;
+            _consoleIn = consoleIn;
         }
     }
 }
