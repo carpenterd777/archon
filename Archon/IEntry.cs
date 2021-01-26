@@ -1,9 +1,10 @@
 using System;
+using System.Text.Json;
 
 namespace Archon
 {
     interface IEntry
     {
-        public string ToArchonJson();
+        public void AddToJsonWriter(Utf8JsonWriter jsonWriter);
     }
 }

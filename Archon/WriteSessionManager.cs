@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace Archon
 {
@@ -11,12 +12,14 @@ namespace Archon
         public string SessionTitle;
         public int SessionNumber;
 
-        private System.IO.TextWriter _consoleOut; 
-        private System.IO.TextReader _consoleIn;
+        private TextWriter _consoleOut; 
+        private TextReader _consoleIn;
         private System.Collections.Generic.List<IEntry> _entries = new();
         private bool _hasWarnedBeforeForceExit = false;
         private bool _isRecordingAudio = false;
         private System.DateTime _dateCreated;
+
+        private const string _prompt = "> ";
 
         /// <summary>
         /// Prompts the user to input a session title. Returns the session title, and sets
@@ -93,7 +96,7 @@ namespace Archon
            string nextInput;
            while (true)
            {
-               _consoleOut.Write("> ");
+               _consoleOut.Write(_prompt);
                nextInput = _consoleIn.ReadLine();
                DispatchWriteSessionAction(nextInput);
            }
@@ -148,12 +151,9 @@ namespace Archon
             string sessionTitleinJson = SessionTitle == null ? "" : SessionTitle;
             string sessionNumberinJson = SessionNumber == 0 ? "" : SessionNumber.ToString();
             
-            System.IO.MemoryStream stream = new();
+            MemoryStream stream = new();
 
-            System.Text.Json.JsonWriterOptions options = new();
-            options.Indented = true;
-
-            using (System.Text.Json.Utf8JsonWriter jsonWriter = new(stream, options))
+            using (System.Text.Json.Utf8JsonWriter jsonWriter = createArchonJsonWriter(stream))
             {
                 jsonWriter.WriteStartObject();
 
@@ -165,7 +165,7 @@ namespace Archon
                 jsonWriter.WriteStartArray();
                 foreach (IEntry entry in _entries)
                 {
-                    jsonWriter.WriteStringValue(entry.ToArchonJson());
+                    entry.AddToJsonWriter(jsonWriter);
                 }
                 jsonWriter.WriteEndArray();
 
@@ -174,16 +174,40 @@ namespace Archon
 
             stream.Position = 0;
             string json; 
-            using (System.IO.StreamReader sr = new(stream))
+            using (StreamReader sr = new(stream))
             {
                 json = sr.ReadToEnd();
             }
             return json;
         }
     
+        /// <summary>
+        /// Creates an .archon.json file in the directory that the write command was called from.
+        /// </summary>
         public void SaveEntries()
         {
-            return; // Not implemented
+            string filename;
+            // If the session title is set
+            if (SessionTitle != "")
+            {
+                filename = SessionTitle;
+                filename = removeIllegalFilenameCharacters(filename); 
+                filename = createUniqueFileNameFromString(filename);
+            }
+            else
+            {
+                filename = _dateCreated.ToString("yyyy_MM_dd");
+                filename = removeIllegalFilenameCharacters(filename);
+                filename = createUniqueFileNameFromString(filename);
+            }
+
+            //  Write the Json to the file
+            using (StreamWriter sw = File.CreateText(Path.Combine(Directory.GetCurrentDirectory(), filename)))
+            {
+                sw.Write(CreateJson());
+            }
+
+            return;
         }
 
         /// <summary>
@@ -268,9 +292,50 @@ namespace Archon
 
         private void warn(string text)
         {
+            System.ConsoleColor previousColor = System.Console.ForegroundColor;
             System.Console.ForegroundColor = ConsoleColor.Red;
             _consoleOut.WriteLine(text);
-            System.Console.ForegroundColor = ConsoleColor.White;
+            System.Console.ForegroundColor = previousColor;
+        }
+
+        private System.Text.Json.Utf8JsonWriter createArchonJsonWriter(Stream stream) => 
+            ArchonJsonWriterFactory.CreateArchonJsonWriter(stream);
+
+        private string createUniqueFileNameFromString(string filename)
+        {
+            // Create list of strings with names of all files from directory
+            System.Collections.Generic.List<string> allFileNames = 
+                new(Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory()));
+            // Keep track of number of iterations attempted
+            string newFilename = filename + ".archon.json";
+            int iterations = 1;
+            // while filename matches name of any file from directory
+            while (allFileNames.Contains(Path.Combine(Directory.GetCurrentDirectory(), newFilename)))
+            {
+            //  Append number of iterations appended to filename
+                newFilename = filename + "(" + iterations.ToString() + ")" + ".archon.json";
+                iterations++;
+            }
+            // Return filename
+            return newFilename;
+        }
+
+        private string removeIllegalFilenameCharacters(string filename)
+        {
+            System.Collections.Generic.List<char> illegalCharacters = 
+                new (Path.GetInvalidFileNameChars());
+
+            System.Text.StringBuilder buffer = new();
+
+            foreach(char c in filename)
+            {
+                if (illegalCharacters.Contains(c))
+                    buffer.Append("_");
+                else
+                    buffer.Append(c);
+            }
+
+            return buffer.ToString();
         }
 
         // Constructors
@@ -278,7 +343,7 @@ namespace Archon
         /// <summary>
         /// Creates a new WriteSessionManager.
         /// </summary>
-        public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn) 
+        public WriteSessionManager(TextWriter consoleOut, TextReader consoleIn) 
             : this(consoleOut, consoleIn, System.DateTime.Now)
         {
         }
@@ -286,7 +351,7 @@ namespace Archon
         /// <summary>
         /// Creates a new WriteSessionManager set to have been created at the passed in date.
         /// </summary>
-        public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn, System.DateTime dateCreated)
+        public WriteSessionManager(TextWriter consoleOut, TextReader consoleIn, System.DateTime dateCreated)
         {
             _consoleOut = consoleOut;
             _consoleIn = consoleIn;
