@@ -14,8 +14,8 @@ namespace Archon.Tests
 
             // Act
             string expected = 
-                @"{""type"":""note"", ""timestamp"":""[5:33 PM]"", ""data"":""Lonqu looked for trouble""}"; 
-            string actual = entry.SerializeToArchonJSON();
+                "{\n\t\"type\": \"note\",\n\t\"timestamp\": \"[5:33 PM]\",\n\t\"data\": \"Lonqu looked for trouble\"\n}"; 
+            string actual = entry.ToArchonJson();
 
             // Assert
             Assert.Equal(expected, actual);

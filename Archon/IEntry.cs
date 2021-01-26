@@ -4,6 +4,6 @@ namespace Archon
 {
     interface IEntry
     {
-        public string SerializeToArchonJSON();
+        public string ToArchonJson();
     }
 }

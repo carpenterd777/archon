@@ -5,24 +5,24 @@ namespace Archon
 {
     public class TextEntry : IEntry
     {
-        private string data;
-        private Timestamp timestamp;
+        private string _data;
+        private Timestamp _timestamp;
 
-        public string SerializeToArchonJSON()
+        public string ToArchonJson()
         {
             return new StringBuilder()
-                .Append("{")
-                .Append("\"type\":\"note\", ")
-                .Append($"\"timestamp\":\"{timestamp.ToString()}\", ")
-                .Append($"\"data\":\"{data}\"")
+                .Append("{\n")
+                .Append("\t\"type\": \"note\",\n")
+                .Append($"\t\"timestamp\": \"{_timestamp.ToString()}\",\n")
+                .Append($"\t\"data\": \"{_data}\"\n")
                 .Append("}")
                 .ToString();
         }
 
         public TextEntry(string note, Timestamp timestamp)
         {
-            this.data = note;
-            this.timestamp = timestamp;
+            _data = note;
+            _timestamp = timestamp;
         }
     }
 }
