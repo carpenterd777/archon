@@ -14,7 +14,7 @@ namespace Archon.Tests
 
             // Act
             string expected = 
-                "{\n\t\"type\": \"note\",\n\t\"timestamp\": \"[5:33 PM]\",\n\t\"data\": \"Lonqu looked for trouble\"\n}"; 
+                "{\n  \"type\": \"note\",\n  \"timestamp\": \"[5:33 PM]\",\n  \"data\": \"Lonqu looked for trouble\"\n}"; 
             string actual = entry.ToArchonJson();
 
             // Assert
