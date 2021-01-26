@@ -16,6 +16,7 @@ namespace Archon
         private System.Collections.Generic.List<IEntry> _entries = new();
         private bool _hasWarnedBeforeForceExit = false;
         private bool _isRecordingAudio = false;
+        private System.DateTime _dateCreated;
 
         /// <summary>
         /// Prompts the user to input a session title. Returns the session title, and sets
@@ -138,6 +139,47 @@ namespace Archon
                     break;
             }
         }
+
+        /// <summary>
+        /// Creates a JSON string based on all of the entries that the user has created so far during this session.
+        /// </summary>
+        public string CreateJson()
+        {
+            string sessionTitleinJson = SessionTitle == null ? "" : SessionTitle;
+            string sessionNumberinJson = SessionNumber == 0 ? "" : SessionNumber.ToString();
+            
+            System.IO.MemoryStream stream = new();
+
+            System.Text.Json.JsonWriterOptions options = new();
+            options.Indented = true;
+
+            using (System.Text.Json.Utf8JsonWriter jsonWriter = new(stream, options))
+            {
+                jsonWriter.WriteStartObject();
+
+                jsonWriter.WriteString("title", sessionTitleinJson);
+                jsonWriter.WriteString("session", sessionNumberinJson);
+                jsonWriter.WriteString("date", _dateCreated.ToShortDateString());
+
+                jsonWriter.WritePropertyName("entries");
+                jsonWriter.WriteStartArray();
+                foreach (IEntry entry in _entries)
+                {
+                    jsonWriter.WriteStringValue(entry.ToArchonJson());
+                }
+                jsonWriter.WriteEndArray();
+
+                jsonWriter.WriteEndObject();
+            }
+
+            stream.Position = 0;
+            string json; 
+            using (System.IO.StreamReader sr = new(stream))
+            {
+                json = sr.ReadToEnd();
+            }
+            return json;
+        }
     
         public void SaveEntries()
         {
@@ -236,10 +278,19 @@ namespace Archon
         /// <summary>
         /// Creates a new WriteSessionManager.
         /// </summary>
-        public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn)
+        public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn) 
+            : this(consoleOut, consoleIn, System.DateTime.Now)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new WriteSessionManager set to have been created at the passed in date.
+        /// </summary>
+        public WriteSessionManager(System.IO.TextWriter consoleOut, System.IO.TextReader consoleIn, System.DateTime dateCreated)
         {
             _consoleOut = consoleOut;
             _consoleIn = consoleIn;
+            _dateCreated = dateCreated; 
         }
     }
 }

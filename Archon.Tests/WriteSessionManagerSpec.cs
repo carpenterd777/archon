@@ -190,6 +190,26 @@ namespace Archon.Tests
             string reprompt = mockConsoleOut.ToString().Split("\n")[1];
 
             Assert.Equal(MessageStrings.SESSION_NUMBER_INVALID_INPUT, reprompt);
+            tearDown();
         }
+
+        // Create Json tests
+        
+        [Fact]
+        public void Create_Json_creates_json()
+        {
+            setUp("");
+
+            WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn, new DateTime(2015, 4, 12, 17, 33, 0, 0));
+
+            //Act
+            string json = wsm.CreateJson();
+            string expected = "{\n  \"title\": \"\",\n  \"session\": \"\",\n  \"date\": \"4/12/2015\",\n  \"entries\": []\n}";
+
+            Assert.Equal(expected, json);
+            tearDown();
+                
+        }
+         
     }
 }
