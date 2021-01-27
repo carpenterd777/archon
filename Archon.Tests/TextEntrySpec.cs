@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Text.Json;
+using Archon;
 using Xunit;
 
 namespace Archon.Tests
@@ -15,7 +18,19 @@ namespace Archon.Tests
             // Act
             string expected = 
                 "{\n  \"type\": \"note\",\n  \"timestamp\": \"[5:33 PM]\",\n  \"data\": \"Lonqu looked for trouble\"\n}"; 
-            string actual = entry.ToArchonJson();
+
+            MemoryStream stream = new();
+            using (Utf8JsonWriter writer = ArchonJsonWriterFactory.CreateArchonJsonWriter(stream))
+            {
+                entry.AddToJsonWriter(writer);
+            }
+
+            string actual;
+            stream.Position = 0;
+            using (StreamReader reader = new(stream))
+            {
+                actual = reader.ReadToEnd();
+            }
 
             // Assert
             Assert.Equal(expected, actual);
