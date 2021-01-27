@@ -280,6 +280,7 @@ namespace Archon
         /// </summary>
         private void noteUserText(string note)
         {
+            resetForceExitWarning();
             // Create timestamp for this instant
             Timestamp tsNow = new();
             // Create a text entry object using note and timestamp
@@ -287,7 +288,7 @@ namespace Archon
             // Add text entry object to list of all entries
             _entries.Add(entry);
             // Change display of last line so that timestamp in string form is prepended to it
-            return; // Not implemented
+            rewriteLineAbove($"{tsNow.ToString()} {note}");
         }
 
         private void warn(string text)
@@ -336,6 +337,16 @@ namespace Archon
             }
 
             return buffer.ToString();
+        }
+
+        private void resetForceExitWarning() => _hasWarnedBeforeForceExit = false;
+
+        private void rewriteLineAbove(string newLineAbove)
+        {
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.WriteLine(""); // clear the line
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.WriteLine(newLineAbove);
         }
 
         // Constructors
