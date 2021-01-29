@@ -293,10 +293,7 @@ namespace Archon
 
         private void warn(string text)
         {
-            System.ConsoleColor previousColor = System.Console.ForegroundColor;
-            System.Console.ForegroundColor = ConsoleColor.Red;
-            _consoleOut.WriteLine(text);
-            System.Console.ForegroundColor = previousColor;
+           Warner.Warn(_consoleOut, text); 
         }
 
         private System.Text.Json.Utf8JsonWriter createArchonJsonWriter(Stream stream) => 
@@ -308,7 +305,7 @@ namespace Archon
             System.Collections.Generic.List<string> allFileNames = 
                 new(Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory()));
            
-            string fileSuffix = ".archon.json"
+            string fileSuffix = ".archon.json";
             string newFilename = filename + fileSuffix;
 
             int iterations = 1;
