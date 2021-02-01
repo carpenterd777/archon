@@ -18,6 +18,7 @@ namespace Archon
         private bool _hasWarnedBeforeForceExit = false;
         private bool _isRecordingAudio = false;
         private System.DateTime _dateCreated;
+        private AudioRecordingManager _audiorm = new();
 
         private const string _prompt = "> ";
 
@@ -271,7 +272,32 @@ namespace Archon
         /// </summary>
         private void toggleRecordUserTextCommand()
         {
-            return; // Not implemented
+           resetForceExitWarning();
+           if (!_isRecordingAudio)
+           {
+                Timestamp tsNow = new();
+
+                string filename = 
+                    $"{AudioRecordingManager.ArchonRecordingsDir}/{DateTime.Now.ToString("yyyy_MM_dddd_hh_mm_ss")}.mp3";
+
+                AudioEntry entry = new(filename, tsNow);
+
+                if (_audiorm.CanRecord())
+                    _entries.Add(entry);
+                
+                _audiorm.Filename = filename;
+                _audiorm.StartRecording();
+
+                _isRecordingAudio = true;
+                rewriteLineAbove($"{tsNow.ToString()} Recording to {filename}...");
+           }
+           else // already recording
+           {
+               _audiorm.StopRecording();
+
+               _isRecordingAudio = false;
+               Console.WriteLine("Recording has stopped.");
+           }    
         }
         
         /// <summary>
