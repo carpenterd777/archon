@@ -18,7 +18,7 @@ namespace Archon
         private bool _hasWarnedBeforeForceExit = false;
         private bool _isRecordingAudio = false;
         private System.DateTime _dateCreated;
-        private AudioRecordingManager _audiorm = new();
+        private AudioRecManager _audiorm = AudioRecManager.GetPlatformSpecificAudioManager();
 
         private const string _prompt = "> ";
 
@@ -278,7 +278,7 @@ namespace Archon
                 Timestamp tsNow = new();
 
                 string filename = 
-                    $"{AudioRecordingManager.ArchonRecordingsDir}/{DateTime.Now.ToString("yyyy_MM_dddd_hh_mm_ss")}.mp3";
+                    $"{AudioRecManager.ArchonRecordingsDir}/{DateTime.Now.ToString("yyyy_MM_dddd_hh_mm_ss")}.mp3";
 
                 AudioEntry entry = new(filename, tsNow);
 
@@ -296,7 +296,7 @@ namespace Archon
                _audiorm.StopRecording();
 
                _isRecordingAudio = false;
-               Console.WriteLine("Recording has stopped.");
+               Console.WriteLine(MessageStrings.RECORDING_STOPPED);
            }    
         }
         
@@ -319,7 +319,7 @@ namespace Archon
 
         private void warn(string text)
         {
-           Warner.Warn(_consoleOut, text); 
+           Strings.Warn(_consoleOut, text); 
         }
 
         private System.Text.Json.Utf8JsonWriter createArchonJsonWriter(Stream stream) => 

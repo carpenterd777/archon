@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Archon
 {
-    internal class Warner
+    internal class Strings
     {
         public static void Warn(TextWriter consoleOut, string text)
         {
@@ -12,5 +12,11 @@ namespace Archon
             consoleOut.WriteLine(text);
             Console.ForegroundColor = previousColor;
         }
+
+        public static string GetInvalidStatusExceptionMessage(string status) =>
+            $"Failed to check for status {status}";
+
+        public static string GetUnsupportedPlatformForRecordingWarning(PlatformID platform) =>
+            $"Unsupported platform {platform}. Recording cannot be performed.";
     }
 }
