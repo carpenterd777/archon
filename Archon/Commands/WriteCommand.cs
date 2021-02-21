@@ -19,11 +19,24 @@ namespace Archon
             WriteSessionManager wsm = new(console.Output, console.Input);
 
             if (Title == default)
-                Title = wsm.PromptSessionTitle();
-                console.Output.WriteLine(); // a new line for padding
+            {
+                wsm.PromptSessionTitle();
+            } 
+            else
+            {
+                wsm.SessionTitle = Title;
+            }
+
+            console.Output.WriteLine(); // a new line for padding
 
             if (SessionNumber == default)
-                SessionNumber = wsm.PromptSessionNumber();
+            {
+                wsm.PromptSessionNumber();
+            } 
+            else
+            {
+                wsm.SessionNumber = SessionNumber;
+            }
 
             wsm.CommandLoop();
 
