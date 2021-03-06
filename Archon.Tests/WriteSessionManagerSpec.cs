@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Globalization;
 using Xunit;
 
 namespace Archon.Tests
@@ -13,6 +14,7 @@ namespace Archon.Tests
 
         private void setUp(string input)
         {
+            CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
             mockInput = input;
 
             mockConsoleOut = new StringWriter();
