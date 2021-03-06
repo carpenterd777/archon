@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Archon
 {
@@ -6,8 +7,11 @@ namespace Archon
     {
         private DateTime instantiationTime;
 
-        public override string ToString() =>
-            $"[{instantiationTime.ToShortTimeString()}]";
+        public override string ToString()
+        { 
+            CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
+            return $"[{instantiationTime.ToShortTimeString()}]";
+        }
 
         public static Timestamp CreateFromString(string timestampString)
         {
