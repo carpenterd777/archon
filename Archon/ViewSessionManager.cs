@@ -15,10 +15,9 @@ namespace Archon
         private string _sessionNumber;         // the session number read from file
         private string _date;                  // the date read from file
         private List<IEntry> _entries = new(); // each entry read from file 
-        private int _currentSelection = 0;     // the user's currently selected entry
-        private int _maxSelection;             // the last selection a user can make before it stops incrementing
+        private int _currentSelection = 1;     // the user's currently selected entry
         private int _pageSize;                 // the number of lines composing a page
-        private int _currentPage;              // the current page the user is viewing
+        private int _currentPage = 1;          // the current page the user is viewing
 
         // Public API
 
@@ -28,23 +27,25 @@ namespace Archon
         public void Draw()
         {
             Console.Clear();
-            _consoleOut.WriteLine($"{_sessionTitle}\t{_sessionNumber}\t{_date}");
+            writeLine($"Session title: {_sessionTitle}\tSession number: {_sessionNumber}\tDate: {_date}", ConsoleColor.Magenta);
 
-            for (int i = 0; i < _entries.Count; i++)
+            int pageStart = _pageSize * (_currentPage - 1) + 1;
+            int pageEnd = _pageSize * _currentPage;
+
+            for (int i = pageStart; i <= pageEnd; i++)
             {
+                if (i >= _entries.Count)
+                {
+                    break;
+                }
+
                 if (i == _currentSelection)
                 {
-                    ConsoleColor lastBGColor = Console.BackgroundColor;
-                    ConsoleColor lastFGColor = Console.ForegroundColor;
-                    Console.BackgroundColor = ConsoleColor.White;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    _consoleOut.WriteLine(_entries[i]);
-                    Console.BackgroundColor = lastBGColor;
-                    Console.ForegroundColor = lastFGColor;
+                    writeLine(_entries[i - 1], ConsoleColor.Black, ConsoleColor.White);
                 }
                 else
                 {
-                    _consoleOut.WriteLine(_entries[i]);
+                    _consoleOut.WriteLine(_entries[i - 1]);
                 }
             }
         }
@@ -70,7 +71,17 @@ namespace Archon
         {
             switch (Console.ReadKey(false).Key)
             {
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.K:
+                    moveUp();
+                    break;
+                case ConsoleKey.DownArrow:
+                case ConsoleKey.J:
+                    moveDown();
+                    break;
                 case ConsoleKey.Escape:
+                case ConsoleKey.Q:
+                    Console.Clear();
                     System.Environment.Exit(0);
                     break;
             }
@@ -111,7 +122,7 @@ namespace Archon
                     // date
                     if (tokenNumber == 2)
                     {
-                        string date = reader.GetString();
+                        _date = reader.GetString();
                         tokenNumber++;
                         continue;
                     }
@@ -150,6 +161,51 @@ namespace Archon
             Strings.Warn(_consoleOut, text);
         }
 
+        private void moveUp()
+        {
+            if (_currentSelection > 1)
+            {
+                _currentSelection--;
+            }
+
+            handlePage();
+        }
+
+        private void moveDown()
+        {
+            if (_currentSelection < _entries.Count - 1)
+            {
+                _currentSelection++;
+            }
+
+            handlePage();
+        }
+
+        private void handlePage()
+        {
+            _currentPage = ((_currentSelection - 1) / _pageSize) + 1;
+        }
+
+        private void writeLine(object text, ConsoleColor fgColor)
+        {
+            ConsoleColor lastFGColor = Console.BackgroundColor;
+            Console.ForegroundColor = fgColor;
+            _consoleOut.WriteLine(text);
+            Console.ForegroundColor = lastFGColor;
+        }
+
+        private void writeLine(object text, ConsoleColor fgColor, ConsoleColor bgColor)
+        {
+            ConsoleColor lastBGColor = Console.BackgroundColor;
+            ConsoleColor lastFGColor = Console.ForegroundColor;
+            Console.BackgroundColor = bgColor;
+            Console.ForegroundColor = fgColor;
+            _consoleOut.WriteLine(text);
+            Console.BackgroundColor = lastBGColor;
+            Console.ForegroundColor = lastFGColor;
+
+        }
+
         // Constructors
 
         public ViewSessionManager(TextWriter consoleOut, TextReader consoleIn)
@@ -158,7 +214,7 @@ namespace Archon
             _consoleIn = consoleIn;
 
             // minus one to reserve the top line for the title, number, and date
-            _pageSize = Console.BufferHeight - 1;
+            _pageSize = Console.WindowHeight - 2;
         }
     }
 }
