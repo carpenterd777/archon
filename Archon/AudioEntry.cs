@@ -10,7 +10,7 @@ namespace Archon
         private Timestamp _timestamp; // the timestamp when recording started
 
         private const string _jsonType = "recording"; // the value the "type" field will have in the Json serialization
-        
+
         public void AddToJsonWriter(Utf8JsonWriter jsonWriter)
         {
             jsonWriter.WriteStartObject();
@@ -20,9 +20,10 @@ namespace Archon
             jsonWriter.WriteString("data", _data);
 
             jsonWriter.WriteEndObject();
-        } 
+        }
 
-        public override string ToString(){
+        public override string ToString()
+        {
             return $"{_timestamp} {_data}";
         }
 

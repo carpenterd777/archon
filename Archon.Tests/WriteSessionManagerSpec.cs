@@ -108,7 +108,7 @@ namespace Archon.Tests
 
             string allOutput = mockConsoleOut.ToString();
             string reprompt = allOutput.Split("\n")[2];
-            
+
             // Assert
             Assert.Equal(MessageStrings.SESSION_TITLE_PROMPT, reprompt);
             Assert.Equal("Ginnungagap time", providedTitle);
@@ -131,20 +131,20 @@ namespace Archon.Tests
 
 
         // Session number tests
-        
+
         [Fact]
         public void Session_number_prompt_displays_a_message()
         {
-           setUp("1\n");
-            
-           WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
+            setUp("1\n");
 
-           // Act
-           wsm.PromptSessionNumber();
+            WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
 
-           // Assert
-           Assert.Equal(MessageStrings.SESSION_NUMBER_PROMPT + "\n", mockConsoleOut.ToString());
-           tearDown();
+            // Act
+            wsm.PromptSessionNumber();
+
+            // Assert
+            Assert.Equal(MessageStrings.SESSION_NUMBER_PROMPT + "\n", mockConsoleOut.ToString());
+            tearDown();
         }
 
         [Fact]
@@ -157,7 +157,7 @@ namespace Archon.Tests
             // Act
             wsm.PromptSessionNumber();
             string reprompt = mockConsoleOut.ToString().Split("\n")[1];
-            
+
             // Assert
             Assert.Equal(MessageStrings.SESSION_NUMBER_INVALID_INPUT, reprompt);
         }
@@ -196,7 +196,7 @@ namespace Archon.Tests
         }
 
         // Create Json tests
-        
+
         [Fact]
         public void Create_Json_creates_json()
         {
@@ -210,8 +210,8 @@ namespace Archon.Tests
 
             Assert.Equal(expected, json);
             tearDown();
-                
+
         }
-         
+
     }
 }

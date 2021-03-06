@@ -10,11 +10,11 @@ namespace Archon
     /// </summary>
     public class WriteSessionManager
     {
-   
+
         public string SessionTitle;
         public int SessionNumber;
 
-        private TextWriter _consoleOut; 
+        private TextWriter _consoleOut;
         private TextReader _consoleIn;
         private List<IEntry> _entries = new();
         private bool _hasWarnedBeforeForceExit = false;
@@ -32,20 +32,20 @@ namespace Archon
         {
             bool userApprovesTitle = false;
             string userInput = null;
-            
-            while(!userApprovesTitle || userInput == null)
+
+            while (!userApprovesTitle || userInput == null)
             {
                 _consoleOut.WriteLine(MessageStrings.SESSION_TITLE_PROMPT);
-                userInput = _consoleIn.ReadLine(); 
+                userInput = _consoleIn.ReadLine();
                 if (canBeConvertedToInt(userInput))
                     userApprovesTitle = VerifyIntSessionTitle();
                 else
                     // It is assumed the user approves the title if it was not an int
                     userApprovesTitle = true;
             }
-            
+
             SessionTitle = userInput;
-            return SessionTitle; 
+            return SessionTitle;
         }
 
         /// <summary>
@@ -89,21 +89,21 @@ namespace Archon
         /// <summary>
         /// Checks that the input is a valid session number.
         /// </summary>
-        public bool IsValidSessionNumber(string potentialSessionNumber) => 
+        public bool IsValidSessionNumber(string potentialSessionNumber) =>
             canBeConvertedToInt(potentialSessionNumber) && int.Parse(potentialSessionNumber) >= 0;
-        
+
         public void CommandLoop()
         {
-           System.Console.Clear(); 
-           printAllEntries();
+            System.Console.Clear();
+            printAllEntries();
 
-           string nextInput;
-           while (true)
-           {
-               _consoleOut.Write(_prompt);
-               nextInput = _consoleIn.ReadLine();
-               DispatchWriteSessionAction(nextInput);
-           }
+            string nextInput;
+            while (true)
+            {
+                _consoleOut.Write(_prompt);
+                nextInput = _consoleIn.ReadLine();
+                DispatchWriteSessionAction(nextInput);
+            }
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Archon
         /// </summary>
         public void DispatchWriteSessionAction(string userTextCommand)
         {
-            switch(userTextCommand)
+            switch (userTextCommand)
             {
                 case "exit":
                     exitUserTextCommand();
@@ -154,7 +154,7 @@ namespace Archon
         {
             string sessionTitleinJson = SessionTitle == null ? "" : SessionTitle;
             string sessionNumberinJson = SessionNumber == 0 ? "" : SessionNumber.ToString();
-            
+
             MemoryStream stream = new();
 
             using (System.Text.Json.Utf8JsonWriter jsonWriter = createJsonWriter(stream))
@@ -177,14 +177,14 @@ namespace Archon
             }
 
             stream.Position = 0;
-            string json; 
+            string json;
             using (StreamReader sr = new(stream))
             {
                 json = sr.ReadToEnd();
             }
             return json;
         }
-    
+
         /// <summary>
         /// Creates an .archon.json file in the directory that the write command was called from.
         /// </summary>
@@ -195,7 +195,7 @@ namespace Archon
             if (SessionTitle != "")
             {
                 filename = SessionTitle;
-                filename = removeIllegalFilenameCharacters(filename); 
+                filename = removeIllegalFilenameCharacters(filename);
                 filename = createUniqueFileNameFromString(filename);
             }
             else
@@ -220,7 +220,8 @@ namespace Archon
         public void Load(string filename)
         {
             string suffix = filename.Substring(filename.IndexOf('.'));
-            if (suffix != ".archon.json") {
+            if (suffix != ".archon.json")
+            {
                 warn($"Cannot read file of type {suffix}");
                 System.Environment.Exit(1);
             }
@@ -233,22 +234,29 @@ namespace Archon
             int tokenNumber = 0;
 
             // this process assumes the json is properly saved
-            while (reader.Read()) {
+            while (reader.Read())
+            {
 
-                if (reader.TokenType == JsonTokenType.String) {
+                if (reader.TokenType == JsonTokenType.String)
+                {
                     // session title
-                    if (tokenNumber == 0) {
+                    if (tokenNumber == 0)
+                    {
                         SessionTitle = reader.GetString();
                         tokenNumber++;
                         continue;
                     }
 
                     // session number
-                    if (tokenNumber == 1) {
+                    if (tokenNumber == 1)
+                    {
                         string sessionNumString = reader.GetString();
-                        if (!canBeConvertedToInt(sessionNumString)) {
+                        if (!canBeConvertedToInt(sessionNumString))
+                        {
                             SessionNumber = 0;
-                        } else {
+                        }
+                        else
+                        {
                             SessionNumber = int.Parse(sessionNumString);
                         }
                         tokenNumber++;
@@ -256,15 +264,16 @@ namespace Archon
                     }
 
                     // date
-                    if (tokenNumber == 2) {
+                    if (tokenNumber == 2)
+                    {
                         string date = reader.GetString();
-                        _dateCreated = convertDateStringToDateTime(date);  
+                        _dateCreated = convertDateStringToDateTime(date);
                         tokenNumber++;
                         continue;
                     }
 
                     // read whole entry at once
-                    
+
                     // entry starts with a string
                     string type = reader.GetString();
                     reader.Read(); // skip ???
@@ -274,13 +283,16 @@ namespace Archon
                     reader.Read(); // skip "data:"
                     string data = reader.GetString();
 
-                    if (type == "note") {
+                    if (type == "note")
+                    {
                         Timestamp tsFromText = Timestamp.CreateFromString(timestamp);
-                        TextEntry newEntry = new(data, tsFromText); 
+                        TextEntry newEntry = new(data, tsFromText);
                         _entries.Add(newEntry);
-                    } else if (type == "recording") {
+                    }
+                    else if (type == "recording")
+                    {
                         Timestamp tsFromText = Timestamp.CreateFromString(timestamp);
-                        AudioEntry newEntry = new(data, tsFromText); 
+                        AudioEntry newEntry = new(data, tsFromText);
                         _entries.Add(newEntry);
                     }
                     tokenNumber++;
@@ -311,7 +323,7 @@ namespace Archon
             }
             return true;
         }
-        
+
         /// <summary>
         /// Responds to a command by the user during a write session to exit the session.
         /// Saves the user's work and exits the program.
@@ -320,9 +332,9 @@ namespace Archon
         {
             SaveEntries();
             System.Environment.Exit(0);
-            return; 
+            return;
         }
-        
+
         /// <summary>
         /// Responds to a command by the user during a write session to exit the session without saving.
         /// Sends a warning to the user the first time they try to force an exit.
@@ -337,46 +349,46 @@ namespace Archon
             {
                 // Warn the user
                 warn(MessageStrings.GetForceExitWarning(exitCommand));
-                
+
                 // Note that the user has been warned
                 _hasWarnedBeforeForceExit = true;
             }
         }
-        
+
         /// <summary>
         /// Toggles the audio recording functionality. When its toggled off, adds the audio entry to the list of entries.
         /// Toggles off itself when 3 minutes have passed. Indicating the new file's name and recording success when toggled off.
         /// </summary>
         private void toggleRecordUserTextCommand()
         {
-           resetForceExitWarning();
-           if (!_isRecordingAudio)
-           {
+            resetForceExitWarning();
+            if (!_isRecordingAudio)
+            {
                 Timestamp tsNow = new();
 
-                string filename = 
+                string filename =
                     $"{AudioRecManager.ArchonRecordingsDir}/{DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")}.mp3";
 
                 AudioEntry entry = new(filename, tsNow);
 
                 if (_audiorm.CanRecord())
                     _entries.Add(entry);
-                
+
                 _audiorm.Filename = filename;
                 _audiorm.StartRecording();
 
                 _isRecordingAudio = true;
                 rewriteLineAbove($"{tsNow.ToString()} Recording to {filename}...");
-           }
-           else // already recording
-           {
-               _audiorm.StopRecording();
+            }
+            else // already recording
+            {
+                _audiorm.StopRecording();
 
-               _isRecordingAudio = false;
-               rewriteLineAbove(MessageStrings.RECORDING_STOPPED);
-           }    
+                _isRecordingAudio = false;
+                rewriteLineAbove(MessageStrings.RECORDING_STOPPED);
+            }
         }
-        
+
         /// <summary>
         /// Adds a note entry to the list of all entries. Changes display so that the timestamp is prepended to the line the
         /// user pressed <Enter> on.
@@ -396,18 +408,18 @@ namespace Archon
 
         private void warn(string text)
         {
-           Strings.Warn(_consoleOut, text); 
+            Strings.Warn(_consoleOut, text);
         }
 
-        private System.Text.Json.Utf8JsonWriter createJsonWriter(Stream stream) => 
+        private System.Text.Json.Utf8JsonWriter createJsonWriter(Stream stream) =>
             JsonWriterFactory.CreateJsonWriter(stream);
 
         private string createUniqueFileNameFromString(string filename)
         {
             // Create list of strings with names of all files from directory
-            System.Collections.Generic.List<string> allFileNames = 
+            System.Collections.Generic.List<string> allFileNames =
                 new(Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory()));
-           
+
             string fileSuffix = ".archon.json";
             string newFilename = filename + fileSuffix;
 
@@ -424,12 +436,12 @@ namespace Archon
 
         private string removeIllegalFilenameCharacters(string filename)
         {
-            System.Collections.Generic.List<char> illegalCharacters = 
-                new (Path.GetInvalidFileNameChars());
+            System.Collections.Generic.List<char> illegalCharacters =
+                new(Path.GetInvalidFileNameChars());
 
             System.Text.StringBuilder buffer = new();
 
-            foreach(char c in filename)
+            foreach (char c in filename)
             {
                 if (illegalCharacters.Contains(c))
                     buffer.Append("_");
@@ -470,8 +482,10 @@ namespace Archon
             return new DateTime(year, month, day);
         }
 
-        private void printAllEntries() {
-            foreach(IEntry entry in _entries) {
+        private void printAllEntries()
+        {
+            foreach (IEntry entry in _entries)
+            {
                 _consoleOut.WriteLine(entry);
             }
         }
@@ -481,7 +495,7 @@ namespace Archon
         /// <summary>
         /// Creates a new WriteSessionManager.
         /// </summary>
-        public WriteSessionManager(TextWriter consoleOut, TextReader consoleIn) 
+        public WriteSessionManager(TextWriter consoleOut, TextReader consoleIn)
             : this(consoleOut, consoleIn, System.DateTime.Now)
         {
         }
@@ -493,7 +507,7 @@ namespace Archon
         {
             _consoleOut = consoleOut;
             _consoleIn = consoleIn;
-            _dateCreated = dateCreated; 
+            _dateCreated = dateCreated;
         }
     }
 }

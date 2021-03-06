@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Archon
 {
-    internal class JsonWriterFactory 
+    internal class JsonWriterFactory
     {
         /// <summary>
         /// Returns a Utf8JsonWriter with custom options to be used throughout the entirety of Archon.
@@ -18,7 +18,7 @@ namespace Archon
         }
     }
 
-    internal class JsonReaderFactory 
+    internal class JsonReaderFactory
     {
         /// <summary>
         /// Returns a Utf8JsonWriter with custom options to be used throughout the entirety of Archon.

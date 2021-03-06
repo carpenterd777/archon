@@ -9,21 +9,21 @@ namespace Archon
         {
             get
             {
-                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)  + "/ArchonRecordings";
+                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/ArchonRecordings";
             }
         }
 
-        public string Filename {get; set;}               // the name of the file that will be written to after recording
+        public string Filename { get; set; }               // the name of the file that will be written to after recording
 
         public const int MAX_RECORDING_SECONDS =         // the max amount of time in seconds that a recording can last 
-            3  * // minutes
-            60 ; // seconds
-        public static readonly string RECORDING_STOPPED_NO_START = 
+            3 * // minutes
+            60; // seconds
+        public static readonly string RECORDING_STOPPED_NO_START =
         "Recording was not found to be in progress when StopRecording() was called";
 
         protected bool _isRecordingAudio = false;          // whether or not a recording is in progress
         protected RecordingManagerStatus _status;          // status of the recording manager (mic detected, invalid platform, etc)
-        
+
         // Public API
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace Archon
         /// <summary/>
         public virtual void StopRecording()
         {
-            if (!_isRecordingAudio) 
+            if (!_isRecordingAudio)
             {
-               throw new AudioRecordingManagerException(RECORDING_STOPPED_NO_START);
+                throw new AudioRecordingManagerException(RECORDING_STOPPED_NO_START);
             }
         }
 
@@ -55,7 +55,7 @@ namespace Archon
         public static AudioRecManager GetPlatformSpecificAudioManager()
         {
             PlatformID platform = System.Environment.OSVersion.Platform;
-            switch(platform) 
+            switch (platform)
             {
                 case PlatformID.Unix:
                     return new UnixAudioRecManager();
@@ -66,18 +66,19 @@ namespace Archon
                         Strings.GetUnsupportedPlatformForRecordingWarning(platform));
             }
         }
-        
-        public void Initialize(){
+
+        public void Initialize()
+        {
             // the audio recording manager is initialized 'with suspicion' that it is in the least valid state 
             // for recording. it continually makes checks after being initialized that clear up the 'suspicion'
             // until it reaches its most valid state and can record.
-        
+
             // for that reason, the only check that should be made in method bodies for the
             // main API is to check that the staus is in fact 'MicDetected'. 
 
             if (!Directory.Exists(ArchonRecordingsDir))
                 Directory.CreateDirectory(ArchonRecordingsDir);
-           
+
             _status = RecordingManagerStatus.InvalidPlatform;
         }
     }
@@ -89,10 +90,10 @@ namespace Archon
         MicNotDetected,
         MicDetected
     }
-    
+
     internal class AudioRecordingManagerException : Exception
     {
         public AudioRecordingManagerException(string errorMessage) : base(errorMessage)
-        {  } 
+        { }
     }
 }

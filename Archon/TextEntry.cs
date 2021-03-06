@@ -10,7 +10,7 @@ namespace Archon
         private Timestamp _timestamp;
 
         private const string _jsonType = "note";
-        
+
         public void AddToJsonWriter(Utf8JsonWriter jsonWriter)
         {
             jsonWriter.WriteStartObject();
@@ -20,9 +20,10 @@ namespace Archon
             jsonWriter.WriteString("data", _data);
 
             jsonWriter.WriteEndObject();
-        } 
+        }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"{_timestamp} {_data}";
         }
 

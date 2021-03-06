@@ -1,4 +1,5 @@
-namespace Archon {
+namespace Archon
+{
     internal class WinAudioRecManager : AudioRecManager
     {
         public override void DetectMic()

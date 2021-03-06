@@ -1,7 +1,8 @@
 using System;
 using System.Diagnostics;
 
-namespace Archon {
+namespace Archon
+{
     /// <remarks>
     /// Uses the Diagnostics namespace to facilitate audio recording through console commands.
     /// Depends on the ALSA driver and its commands for UNIX support, which may hinder portability.
@@ -16,7 +17,7 @@ namespace Archon {
             string result = arecord.StandardOutput.ReadToEnd();
             arecord.WaitForExit();
 
-            string expectedarecordCaptureDeviceOutput = "card 0"; 
+            string expectedarecordCaptureDeviceOutput = "card 0";
 
             // this is an extraordinarily brittle test, but my understanding of arecord/aplay 
             // is limited at the moment
@@ -24,7 +25,7 @@ namespace Archon {
             if (result.Split("\n")[1].Substring(0, 6) == expectedarecordCaptureDeviceOutput)
             {
                 _status = RecordingManagerStatus.MicDetected;
-            } 
+            }
         }
 
         public override void StartRecording()
@@ -49,14 +50,14 @@ namespace Archon {
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName               = "/bin/bash",
-                    Arguments              = $"-c \"{command}\"",
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{command}\"",
                     RedirectStandardOutput = true,
-                    UseShellExecute        = false,
-                    CreateNoWindow         = true
+                    UseShellExecute = false,
+                    CreateNoWindow = true
                 }
             };
-            
+
             return proc;
         }
         private void confirmAlsaInstall()
@@ -69,14 +70,14 @@ namespace Archon {
 
             // TODO: replace with regex to match all version 1s
             if (result == "arecord: version 1.2.2 by Jaroslav Kysela <perex@perex.cz>\n")
-                _status =  RecordingManagerStatus.MicNotDetected; // mic detection happens separately
+                _status = RecordingManagerStatus.MicNotDetected; // mic detection happens separately
             else // alsa possibly not installed
-                _status =  RecordingManagerStatus.NoCompatibleAPI;
+                _status = RecordingManagerStatus.NoCompatibleAPI;
         }
 
         private Process alsaRecord(
          string filename,
-         int durationSeconds = MAX_RECORDING_SECONDS, 
+         int durationSeconds = MAX_RECORDING_SECONDS,
          string format = "cd" // 16 bit little endian, 44100, stereo 
         )
         {
@@ -88,7 +89,8 @@ namespace Archon {
 
         // Constructors
 
-        public UnixAudioRecManager() {
+        public UnixAudioRecManager()
+        {
             Initialize();
         }
     }
