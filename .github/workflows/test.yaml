@@ -7,6 +7,20 @@ on:
         branches: [master]
 
 jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup .NET core SDK 5.0
+              uses: actions/setup-dotnet@v1.7.2
+              with:
+                  dotnet-version: '5.0.x'
+            - name: Install dependencies
+              run: dotnet restore
+            - name: Install dotnet format
+              run: dotnet tool install -g dotnet-format
+            - name: Enforce formatting with dotnet format
+              run: test -z $(dotnet format --check | tr -d "\n ")
     build:
 
         runs-on: ubuntu-latest
