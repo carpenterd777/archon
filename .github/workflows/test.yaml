@@ -20,7 +20,7 @@ jobs:
             - name: Install dotnet format
               run: dotnet tool install -g dotnet-format
             - name: Enforce formatting with dotnet format
-              run: test -z $(dotnet format --check | tr -d "\n ")
+              run: test -z $(dotnet format --check | tail -n +3 | tr -d "\n ")
     build:
 
         runs-on: ubuntu-latest
