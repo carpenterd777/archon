@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Archon
 {
@@ -14,7 +16,7 @@ namespace Archon
 
         private TextWriter _consoleOut; 
         private TextReader _consoleIn;
-        private System.Collections.Generic.List<IEntry> _entries = new();
+        private List<IEntry> _entries = new();
         private bool _hasWarnedBeforeForceExit = false;
         private bool _isRecordingAudio = false;
         private System.DateTime _dateCreated;
@@ -93,6 +95,7 @@ namespace Archon
         public void CommandLoop()
         {
            System.Console.Clear(); 
+           printAllEntries();
 
            string nextInput;
            while (true)
@@ -154,7 +157,7 @@ namespace Archon
             
             MemoryStream stream = new();
 
-            using (System.Text.Json.Utf8JsonWriter jsonWriter = createArchonJsonWriter(stream))
+            using (System.Text.Json.Utf8JsonWriter jsonWriter = createJsonWriter(stream))
             {
                 jsonWriter.WriteStartObject();
 
@@ -209,6 +212,80 @@ namespace Archon
             }
 
             return;
+        }
+
+        /// <summary>
+        /// Loads an .archon.json file to continue appending to.
+        /// </summary>
+        public void Load(string filename)
+        {
+            string suffix = filename.Substring(filename.IndexOf('.'));
+            if (suffix != ".archon.json") {
+                warn($"Cannot read file of type {suffix}");
+                System.Environment.Exit(1);
+            }
+
+            System.Text.Json.Utf8JsonReader reader = JsonReaderFactory.CreateJsonReader(
+                new System.Buffers.ReadOnlySequence<Byte>(
+                    File.ReadAllBytes(
+                        filename)));
+
+            int tokenNumber = 0;
+
+            // this process assumes the json is properly saved
+            while (reader.Read()) {
+
+                if (reader.TokenType == JsonTokenType.String) {
+                    // session title
+                    if (tokenNumber == 0) {
+                        SessionTitle = reader.GetString();
+                        tokenNumber++;
+                        continue;
+                    }
+
+                    // session number
+                    if (tokenNumber == 1) {
+                        string sessionNumString = reader.GetString();
+                        if (!canBeConvertedToInt(sessionNumString)) {
+                            SessionNumber = 0;
+                        } else {
+                            SessionNumber = int.Parse(sessionNumString);
+                        }
+                        tokenNumber++;
+                        continue;
+                    }
+
+                    // date
+                    if (tokenNumber == 2) {
+                        string date = reader.GetString();
+                        _dateCreated = convertDateStringToDateTime(date);  
+                        tokenNumber++;
+                        continue;
+                    }
+
+                    // read whole entry at once
+                    
+                    // entry starts with a string
+                    string type = reader.GetString();
+                    reader.Read(); // skip ???
+                    reader.Read(); // skip "timestamp:"
+                    string timestamp = reader.GetString();
+                    reader.Read(); // skip ???
+                    reader.Read(); // skip "data:"
+                    string data = reader.GetString();
+
+                    if (type == "note") {
+                        Timestamp tsFromText = Timestamp.CreateFromString(timestamp);
+                        TextEntry newEntry = new(data, tsFromText); 
+                        _entries.Add(newEntry);
+                    } else if (type == "recording") {
+                        Timestamp tsFromText = Timestamp.CreateFromString(timestamp);
+                        AudioEntry newEntry = new(data, tsFromText); 
+                        _entries.Add(newEntry);
+                    }
+                    tokenNumber++;
+                }
+            }
         }
 
         /// <summary>
@@ -278,7 +355,7 @@ namespace Archon
                 Timestamp tsNow = new();
 
                 string filename = 
-                    $"{AudioRecManager.ArchonRecordingsDir}/{DateTime.Now.ToString("yyyy_MM_dddd_hh_mm_ss")}.mp3";
+                    $"{AudioRecManager.ArchonRecordingsDir}/{DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")}.mp3";
 
                 AudioEntry entry = new(filename, tsNow);
 
@@ -296,7 +373,7 @@ namespace Archon
                _audiorm.StopRecording();
 
                _isRecordingAudio = false;
-               Console.WriteLine(MessageStrings.RECORDING_STOPPED);
+               rewriteLineAbove(MessageStrings.RECORDING_STOPPED);
            }    
         }
         
@@ -322,8 +399,8 @@ namespace Archon
            Strings.Warn(_consoleOut, text); 
         }
 
-        private System.Text.Json.Utf8JsonWriter createArchonJsonWriter(Stream stream) => 
-            ArchonJsonWriterFactory.CreateArchonJsonWriter(stream);
+        private System.Text.Json.Utf8JsonWriter createJsonWriter(Stream stream) => 
+            JsonWriterFactory.CreateJsonWriter(stream);
 
         private string createUniqueFileNameFromString(string filename)
         {
@@ -371,6 +448,32 @@ namespace Archon
             Console.WriteLine(""); // clear the line
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             Console.WriteLine(newLineAbove);
+        }
+
+        private DateTime convertDateStringToDateTime(string dateString)
+        {
+            string[] splits = dateString.Split('/');
+            int day;
+            int month;
+            int year;
+            try
+            {
+                day = int.Parse(splits[1]);
+                month = int.Parse(splits[0]);
+                year = int.Parse(splits[2]);
+            }
+            catch (FormatException)
+            {
+                warn("There was a problem reading the date. Setting the date to today");
+                return DateTime.Today;
+            }
+            return new DateTime(year, month, day);
+        }
+
+        private void printAllEntries() {
+            foreach(IEntry entry in _entries) {
+                _consoleOut.WriteLine(entry);
+            }
         }
 
         // Constructors

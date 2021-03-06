@@ -22,6 +22,10 @@ namespace Archon
             jsonWriter.WriteEndObject();
         } 
 
+        public override string ToString(){
+            return $"{_timestamp} {_data}";
+        }
+
         public AudioEntry(string filepath, Timestamp timestamp)
         {
             _data = filepath;

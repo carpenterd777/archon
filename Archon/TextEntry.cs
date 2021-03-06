@@ -22,6 +22,10 @@ namespace Archon
             jsonWriter.WriteEndObject();
         } 
 
+        public override string ToString() {
+            return $"{_timestamp} {_data}";
+        }
+
         public TextEntry(string note, Timestamp timestamp)
         {
             _data = note;
