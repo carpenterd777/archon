@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 
-namespace Archon
+namespace Archon.Utils
 {
-    internal class Strings
+    public class Strings
     {
         public static void Warn(TextWriter consoleOut, string text)
         {

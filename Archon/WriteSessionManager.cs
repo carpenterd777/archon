@@ -3,6 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.Json;
 
+using Archon.Utils;
+
 namespace Archon
 {
     /// <summary>
@@ -219,12 +221,7 @@ namespace Archon
         /// </summary>
         public void Load(string filename)
         {
-            string suffix = filename.Substring(filename.IndexOf('.'));
-            if (suffix != ".archon.json")
-            {
-                warn($"Cannot read file of type {suffix}");
-                System.Environment.Exit(1);
-            }
+            Utilities.ExitIfWrongFile(filename, _consoleOut);
 
             System.Text.Json.Utf8JsonReader reader = JsonReaderFactory.CreateJsonReader(
                 new System.Buffers.ReadOnlySequence<Byte>(
