@@ -68,9 +68,11 @@ namespace Archon
         /// </summary>
         public void WaitForInput()
         {
-            switch (Console.ReadKey(false))
+            switch (Console.ReadKey(false).Key)
             {
-
+                case ConsoleKey.Escape:
+                    System.Environment.Exit(0);
+                    break;
             }
         }
 
