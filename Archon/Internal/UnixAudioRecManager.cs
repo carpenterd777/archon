@@ -24,9 +24,17 @@ namespace Archon
             // this is an extraordinarily brittle test, but my understanding of arecord/aplay 
             // is limited at the moment
 
-            if (result.Split("\n")[1].Substring(0, 6) == expectedarecordCaptureDeviceOutput)
+            try
             {
-                _status = RecordingManagerStatus.MicDetected;
+                if (result.Split("\n")[1].Substring(0, 6) == expectedarecordCaptureDeviceOutput)
+                {
+                    _status = RecordingManagerStatus.MicDetected;
+                }
+            }
+            catch (IndexOutOfRangeException)
+            {
+                // result did not pick up any mics if the string was too short
+                // to substring
             }
         }
 
@@ -45,8 +53,6 @@ namespace Archon
         }
 
         // Private methods
-        private void warn(string text) => Strings.Warn(Console.Out, text);
-
         private void confirmAlsaInstall()
         {
             Process arecord = Utilities.CreateLinuxProcess("arecord --version");
@@ -78,7 +84,16 @@ namespace Archon
 
         public UnixAudioRecManager()
         {
-            Initialize();
+            confirmAlsaInstall();
+
+            if (_status == RecordingManagerStatus.MicNotDetected)
+            {
+                Initialize();
+            }
+            else
+            {
+                Strings.Warn(System.Console.Out, MessageStrings.NO_ALSA);
+            }
         }
     }
 }

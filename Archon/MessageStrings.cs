@@ -12,6 +12,9 @@ namespace Archon
             "That is not a valid session number. Please input a number, or leave it blank:";
         public static readonly string RECORDING_STOPPED = "Recording has stopped.";
 
+        public static readonly string NO_ALSA =
+            "Could not find ALSA driver on this system. Cannot record audio without ALSA support";
+
         public static string GetForceExitWarning(string exitCommand) =>
             $"You are about to exit without saving. Enter {exitCommand} again to confirm.";
     }
