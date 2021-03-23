@@ -2,11 +2,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System;
+using System.Diagnostics;
 
 namespace Archon.Utils
 {
     public class Utilities
-    {
+    { 
+        public static string ArchonRecordingsDir         // the name of the directory that will be written to 
+        {
+            get
+            {
+                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/ArchonRecordings";
+            }
+        }
+
         public static bool HasCorrectFileSuffix(string filename)
         {
             string suffix = filename.Substring(filename.IndexOf('.'));
@@ -52,6 +61,23 @@ namespace Archon.Utils
                 // this should not be reached
                 throw new Exception($"reached unknown entry type");
             }
+        }
+
+        public static Process CreateLinuxProcess(string command)
+        {
+            Process proc = new()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{command}\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            return proc;
         }
     }
 }

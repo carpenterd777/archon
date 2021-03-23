@@ -14,7 +14,7 @@ namespace Archon
         private Process _activeAlsa; // the process to record audio
         public override void DetectMic()
         {
-            Process arecord = createLinuxProcess("arecord -l");
+            Process arecord = Utilities.CreateLinuxProcess("arecord -l");
             arecord.Start();
             string result = arecord.StandardOutput.ReadToEnd();
             arecord.WaitForExit();
@@ -46,25 +46,10 @@ namespace Archon
 
         // Private methods
         private void warn(string text) => Strings.Warn(Console.Out, text);
-        private Process createLinuxProcess(string command)
-        {
-            Process proc = new()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"{command}\"",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-
-            return proc;
-        }
+        
         private void confirmAlsaInstall()
         {
-            Process arecord = createLinuxProcess("arecord --version");
+            Process arecord = Utilities.CreateLinuxProcess("arecord --version");
 
             arecord.Start();
             string result = arecord.StandardOutput.ReadToEnd();
@@ -84,7 +69,7 @@ namespace Archon
         )
         {
             string command = $"arecord --duration={durationSeconds} --format={format} --nonblock --quiet {filename}";
-            Process arecord = createLinuxProcess(command);
+            Process arecord = Utilities.CreateLinuxProcess(command);
 
             return arecord;
         }

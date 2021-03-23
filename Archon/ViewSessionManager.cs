@@ -18,6 +18,8 @@ namespace Archon
         private int _currentSelection = 1;     // the user's currently selected entry
         private int _pageSize;                 // the number of lines composing a page
         private int _currentPage = 1;          // the current page the user is viewing
+        private AudioPlaybackManager _audiopm 
+            = AudioPlaybackManager.GetPlatformSpecificAudioManager();
 
         // Public API
 
@@ -34,7 +36,7 @@ namespace Archon
 
             for (int i = pageStart; i <= pageEnd; i++)
             {
-                if (i >= _entries.Count)
+                if (i >= _entries.Count + 1)
                 {
                     break;
                 }
@@ -78,6 +80,9 @@ namespace Archon
                 case ConsoleKey.DownArrow:
                 case ConsoleKey.J:
                     moveDown();
+                    break;
+                case ConsoleKey.Enter:
+                    activateCurrentEntry();
                     break;
                 case ConsoleKey.Escape:
                 case ConsoleKey.Q:
@@ -173,7 +178,7 @@ namespace Archon
 
         private void moveDown()
         {
-            if (_currentSelection < _entries.Count - 1)
+            if (_currentSelection < _entries.Count)
             {
                 _currentSelection++;
             }
@@ -204,6 +209,17 @@ namespace Archon
             Console.BackgroundColor = lastBGColor;
             Console.ForegroundColor = lastFGColor;
 
+        }
+
+        private void activateCurrentEntry()
+        {
+            IEntry currentEntry = _entries[_currentSelection - 1];
+
+            if (currentEntry.GetType().Equals(typeof(AudioEntry)))
+            {
+                _audiopm.Filename = currentEntry.GetData();
+                _audiopm.Play();
+            }
         }
 
         // Constructors

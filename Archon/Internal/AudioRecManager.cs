@@ -82,6 +82,7 @@ namespace Archon
                 Directory.CreateDirectory(ArchonRecordingsDir);
 
             _status = RecordingManagerStatus.InvalidPlatform;
+            DetectMic();
         }
     }
 
