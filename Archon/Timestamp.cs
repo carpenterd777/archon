@@ -46,18 +46,18 @@ namespace Archon
             // ...
             // (11, PM) -> 23
 
-           if (timeModifier == "AM")
-           {
-               if (twelveHour == 12)
-                   return 0;
+            if (timeModifier == "AM")
+            {
+                if (twelveHour == 12)
+                    return 0;
                 return twelveHour;
-           }
-           else // PM
-           {
-               if (twelveHour == 12)
-                   return 12;
-               return twelveHour + 12;
-           }
+            }
+            else // PM
+            {
+                if (twelveHour == 12)
+                    return 12;
+                return twelveHour + 12;
+            }
         }
 
         public Timestamp(DateTime dt)

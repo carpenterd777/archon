@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Archon.Utils
 {
     public class Utilities
-    { 
+    {
         public static string ArchonRecordingsDir         // the name of the directory that will be written to 
         {
             get

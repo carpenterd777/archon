@@ -46,7 +46,7 @@ namespace Archon
 
         // Private methods
         private void warn(string text) => Strings.Warn(Console.Out, text);
-        
+
         private void confirmAlsaInstall()
         {
             Process arecord = Utilities.CreateLinuxProcess("arecord --version");

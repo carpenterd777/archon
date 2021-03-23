@@ -368,7 +368,7 @@ namespace Archon
 
                 AudioEntry entry = new(filename, tsNow);
 
-                if (_audiorm.CanRecord()) 
+                if (_audiorm.CanRecord())
                 {
                     _entries.Add(entry);
                     _audiorm.Filename = filename;
@@ -376,7 +376,7 @@ namespace Archon
                     _isRecordingAudio = true;
                     rewriteLineAbove($"{tsNow.ToString()} Recording to {filename}...");
                 }
-                else 
+                else
                 {
                     rewriteLineAbove("Was unable to start recording.");
                 }

@@ -18,7 +18,7 @@ namespace Archon
         private int _currentSelection = 1;     // the user's currently selected entry
         private int _pageSize;                 // the number of lines composing a page
         private int _currentPage = 1;          // the current page the user is viewing
-        private AudioPlaybackManager _audiopm 
+        private AudioPlaybackManager _audiopm
             = AudioPlaybackManager.GetPlatformSpecificAudioManager();
 
         // Public API
