@@ -65,7 +65,7 @@ namespace Archon
                     return new WinAudioRecManager();
                 default:
                     throw new AudioRecordingManagerException(
-                        Strings.GetUnsupportedPlatformForRecordingWarning(platform));
+                        MessageStrings.GetUnsupportedPlatformForRecordingWarning(platform));
             }
         }
 

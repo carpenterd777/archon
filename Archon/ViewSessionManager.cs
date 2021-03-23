@@ -163,7 +163,7 @@ namespace Archon
 
         private void warn(string text)
         {
-            Strings.Warn(_consoleOut, text);
+            MessageStrings.Warn(_consoleOut, text);
         }
 
         private void moveUp()

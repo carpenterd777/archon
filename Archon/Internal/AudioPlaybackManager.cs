@@ -20,7 +20,7 @@ namespace Archon
                 // case PlatformID.Win32NT:
                 default:
                     throw new AudioRecordingManagerException(
-                        Strings.GetUnsupportedPlatformForRecordingWarning(platform));
+                        MessageStrings.GetUnsupportedPlatformForRecordingWarning(platform));
             }
         }
     }

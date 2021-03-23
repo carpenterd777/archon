@@ -92,7 +92,7 @@ namespace Archon
             }
             else
             {
-                Strings.Warn(System.Console.Out, MessageStrings.NO_ALSA);
+                MessageStrings.Warn(System.Console.Out, MessageStrings.NO_ALSA);
             }
         }
     }

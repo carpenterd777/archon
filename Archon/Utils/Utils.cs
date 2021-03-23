@@ -27,7 +27,7 @@ namespace Archon.Utils
             if (!HasCorrectFileSuffix(filename))
             {
                 string suffix = filename.Substring(filename.IndexOf('.'));
-                Strings.Warn(consoleOut, $"Cannot read file of type {suffix}");
+                MessageStrings.Warn(consoleOut, $"Cannot read file of type {suffix}");
                 System.Environment.Exit(1);
             }
         }
