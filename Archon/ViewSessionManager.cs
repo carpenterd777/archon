@@ -161,11 +161,6 @@ namespace Archon
             }
         }
 
-        private void warn(string text)
-        {
-            MessageStrings.Warn(_consoleOut, text);
-        }
-
         private void moveUp()
         {
             if (_currentSelection > 1)
