@@ -421,14 +421,30 @@ namespace Archon
             System.Collections.Generic.List<string> allFileNames =
                 new(Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory()));
 
+            // Clean up the passed filename
             string fileSuffix = ".archon.json";
-            string newFilename = filename + fileSuffix;
+            string newFilename = "";
+            foreach (char c in filename.ToLower())
+            {
+                if (c == '.')
+                {
+                    continue;
+                }
+                else if (c == ' ')
+                {
+                    newFilename += '_';
+                }
+                else
+                {
+                    newFilename += c;
+                }
+            }
 
             int iterations = 1;
             while (allFileNames.Contains(Path.Combine(Directory.GetCurrentDirectory(), newFilename)))
             {
                 // Append number of iterations to filename
-                newFilename = filename + "(" + iterations.ToString() + ")" + fileSuffix;
+                newFilename = filename + "_" + iterations.ToString() + fileSuffix;
                 iterations++;
             }
 
