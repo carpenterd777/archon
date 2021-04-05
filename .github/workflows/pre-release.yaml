@@ -1,0 +1,36 @@
+name: "pre-release"
+
+on:
+  push:
+    branches:
+    - "master"
+
+jobs:
+  pre-release:
+    name: "Pre-release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET core SDK 5.0
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+            dotnet-version: '5.0.x'
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+      - name: Publish 
+        run: dotnet publish -c Release
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            LICENSE
+            ./Archon/bin/Release/net5.0/linux-x64/publish/Archon
+            ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb
