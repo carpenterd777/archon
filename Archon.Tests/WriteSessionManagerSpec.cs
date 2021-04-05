@@ -214,5 +214,37 @@ namespace Archon.Tests
 
         }
 
+        // File creation tests
+
+        [Fact]
+        public void Creates_snake_case_filename_from_session_title()
+        {
+            setUp();
+
+            WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
+            wsm.SessionTitle = "Wings for Ginnungagap";
+            wsm.SaveEntries();
+
+            File.Exists("./wings_for_ginnungagap.archon.json").Should().BeTrue();
+
+            File.Delete("./wings_for_ginnungagap.archon.json");
+            tearDown();
+        }
+
+        [Fact]
+        public void Removes_period_from_filename()
+        {
+            setUp();
+
+            WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
+            wsm.SessionTitle = "Wings. For Ginnungagap";
+            wsm.SaveEntries();
+
+            File.Exists("./wings_for_ginnungagap.archon.json").Should().BeTrue();
+
+            File.Delete("./wings_for_ginnungagap.archon.json");
+            tearDown();
+        }
+
     }
 }
