@@ -1,4 +1,5 @@
 using System;
+using FluentAssertions;
 using Xunit;
 
 namespace Archon.Tests
@@ -16,8 +17,8 @@ namespace Archon.Tests
             Timestamp ts2 = new(new DateTime(1989, 12, 13, 4, 20, 0, 0));
 
             // Assert
-            Assert.Equal("[4:20 PM]", ts1.ToString());
-            Assert.Equal("[4:20 AM]", ts2.ToString());
+            ts1.ToString().Should().Be("[4:20 PM]", "because it is the PM");
+            ts2.ToString().Should().Be("[4:20 AM]", "because it is the AM");
         }
     }
 }
