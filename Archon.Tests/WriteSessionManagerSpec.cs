@@ -231,5 +231,20 @@ namespace Archon.Tests
             tearDown();
         }
 
+        [Fact]
+        public void Removes_period_from_filename()
+        {
+            setUp();
+
+            WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
+            wsm.SessionTitle = "Wings. For Ginnungagap";
+            wsm.SaveEntries();
+
+            File.Exists("./wings_for_ginnungagap.archon.json").Should().BeTrue();
+
+            File.Delete("./wings_for_ginnungagap.archon.json");
+            tearDown();
+        }
+
     }
 }
