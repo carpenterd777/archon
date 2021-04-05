@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Globalization;
+using FluentAssertions;
 using Xunit;
 
 namespace Archon.Tests
@@ -44,22 +45,23 @@ namespace Archon.Tests
             wsm.PromptSessionTitle();
 
             // Assert
-            Assert.Equal(MessageStrings.SESSION_TITLE_PROMPT + "\n", mockConsoleOut.ToString());
+            mockConsoleOut.ToString().Should().Be(MessageStrings.SESSION_TITLE_PROMPT + "\n", "because that is the prompt message");
             tearDown();
         }
 
         [Fact]
         public void Session_title_prompt_accepts_a_string()
         {
-            setUp("The Assault on House Debauch\n");
+            string input = "The Assault on House Debauch";
+            setUp(input + "\n");
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
 
             // Act
             string providedTitle = wsm.PromptSessionTitle();
 
             // Assert
-            Assert.Equal("The Assault on House Debauch", providedTitle);
-            Assert.Equal("The Assault on House Debauch", wsm.SessionTitle);
+            providedTitle.Should().Be(input, "because that was the provided title");
+            wsm.SessionTitle.Should().Be(input, "because that was the provided title");
             tearDown();
         }
 
@@ -76,7 +78,7 @@ namespace Archon.Tests
             var followUp = allOutput.Split("\n")[1]; // first one is "Session title: "
 
             // Assert
-            Assert.Equal(MessageStrings.SESSION_TITLE_INT_INPUT, followUp);
+            followUp.Should().Be(MessageStrings.SESSION_TITLE_INT_INPUT, "because the user may have confused the session title prompt for the session number prompt");
             tearDown();
         }
 
@@ -93,7 +95,7 @@ namespace Archon.Tests
             string followUp = allOutput.Split("\n")[1];
 
             // Assert
-            Assert.Equal("", followUp);
+            followUp.Should().Be("", "because the user likely did not confuse the session title prompt with the session number prompt");
             tearDown();
         }
 
@@ -110,8 +112,7 @@ namespace Archon.Tests
             string reprompt = allOutput.Split("\n")[2];
 
             // Assert
-            Assert.Equal(MessageStrings.SESSION_TITLE_PROMPT, reprompt);
-            Assert.Equal("Ginnungagap time", providedTitle);
+            reprompt.Should().Be(MessageStrings.SESSION_TITLE_PROMPT, "the user indicated that they put in the wrong session title");
             tearDown();
         }
 
@@ -126,7 +127,7 @@ namespace Archon.Tests
             string userInput = wsm.PromptSessionTitle();
 
             //Assert
-            Assert.Equal("", userInput);
+            userInput.Should().Be("", "because the user did not enter anything for the session title");
         }
 
 
@@ -143,7 +144,7 @@ namespace Archon.Tests
             wsm.PromptSessionNumber();
 
             // Assert
-            Assert.Equal(MessageStrings.SESSION_NUMBER_PROMPT + "\n", mockConsoleOut.ToString());
+            mockConsoleOut.ToString().Should().Be(MessageStrings.SESSION_NUMBER_PROMPT + "\n", "because that is the session number prompt");
             tearDown();
         }
 
@@ -159,7 +160,8 @@ namespace Archon.Tests
             string reprompt = mockConsoleOut.ToString().Split("\n")[1];
 
             // Assert
-            Assert.Equal(MessageStrings.SESSION_NUMBER_INVALID_INPUT, reprompt);
+            reprompt.Should().Be(MessageStrings.SESSION_NUMBER_INVALID_INPUT, "because the user did not pass in a number");
+            tearDown();
         }
 
         [Fact]
@@ -170,12 +172,11 @@ namespace Archon.Tests
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
 
             // Act
-            var sessionNumber = wsm.PromptSessionNumber();
+            int sessionNumber = wsm.PromptSessionNumber();
 
             // Assert
-            Assert.IsType<int>(sessionNumber);
-            Assert.Equal(23, sessionNumber);
-            Assert.Equal(23, wsm.SessionNumber);
+            sessionNumber.Should().Be(23, "because that was the passed in session number");
+            wsm.SessionNumber.Should().Be(23, "because that was the passed in session number");
             tearDown();
         }
 
@@ -191,7 +192,7 @@ namespace Archon.Tests
 
             string reprompt = mockConsoleOut.ToString().Split("\n")[1];
 
-            Assert.Equal(MessageStrings.SESSION_NUMBER_INVALID_INPUT, reprompt);
+            reprompt.Should().Be(MessageStrings.SESSION_NUMBER_INVALID_INPUT, "because the user entered an invalid int");
             tearDown();
         }
 
@@ -200,7 +201,7 @@ namespace Archon.Tests
         [Fact]
         public void Create_Json_creates_json()
         {
-            setUp("");
+            setUp();
 
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn, new DateTime(2015, 4, 12, 17, 33, 0, 0));
 
@@ -208,7 +209,7 @@ namespace Archon.Tests
             string json = wsm.CreateJson();
             string expected = "{\n  \"title\": \"\",\n  \"session\": \"\",\n  \"date\": \"4/12/2015\",\n  \"entries\": []\n}";
 
-            Assert.Equal(expected, json);
+            json.Should().Be(expected, "because that is the form of a JSON entry");
             tearDown();
 
         }
