@@ -25,7 +25,7 @@ jobs:
       - name: Publish 
         run: dotnet publish -c Release
       - name: Make executable lowercase
-        run: mv /Archon/bin/Release/net5.0/linux-x64/publish/Archon /Archon/bin/Release/net5.0/linux-x64/publish/archon
+        run: mv ./Archon/bin/Release/net5.0/linux-x64/publish/Archon ./Archon/bin/Release/net5.0/linux-x64/publish/archon
       - name: Zip up files
         run:  zip archon.zip ./Archon/bin/Release/net5.0/linux-x64/publish/archon ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb
       - uses: "marvinpinto/action-automatic-releases@latest"
