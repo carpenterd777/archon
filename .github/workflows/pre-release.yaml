@@ -24,6 +24,10 @@ jobs:
         run: dotnet test --no-restore --verbosity normal
       - name: Publish 
         run: dotnet publish -c Release
+      - name: Make executable lowercase
+        run: mv /Archon/bin/Release/net5.0/linux-x64/publish/Archon /Archon/bin/Release/net5.0/linux-x64/publish/archon
+      - name: Zip up files
+        run:  zip archon.zip ./Archon/bin/Release/net5.0/linux-x64/publish/archon ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -32,5 +36,4 @@ jobs:
           title: "Development Build"
           files: |
             LICENSE
-            ./Archon/bin/Release/net5.0/linux-x64/publish/Archon
-            ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb
+            ./archon.zip
