@@ -192,20 +192,10 @@ namespace Archon
         /// </summary>
         public void SaveEntries()
         {
-            string filename;
-            // If the session title is set
-            if (SessionTitle != "")
-            {
-                filename = SessionTitle;
-                filename = removeIllegalFilenameCharacters(filename);
-                filename = createUniqueFileNameFromString(filename);
-            }
-            else
-            {
-                filename = _dateCreated.ToString("yyyy_MM_dd");
-                filename = removeIllegalFilenameCharacters(filename);
-                filename = createUniqueFileNameFromString(filename);
-            }
+            string filename = SessionTitle != "" ? SessionTitle : _dateCreated.ToString("yyyy_MM_dd");
+
+            filename = removeIllegalFilenameCharacters(filename);
+            filename = createUniqueFileNameFromString(filename);
 
             //  Write the Json to the file
             using (StreamWriter sw = File.CreateText(Path.Combine(Directory.GetCurrentDirectory(), filename)))
@@ -439,12 +429,13 @@ namespace Archon
                     newFilename += c;
                 }
             }
+            newFilename += fileSuffix;
 
             int iterations = 1;
             while (allFileNames.Contains(Path.Combine(Directory.GetCurrentDirectory(), newFilename)))
             {
                 // Append number of iterations to filename
-                newFilename = filename + "_" + iterations.ToString() + fileSuffix;
+                newFilename = newFilename + "_" + iterations.ToString() + fileSuffix;
                 iterations++;
             }
 
