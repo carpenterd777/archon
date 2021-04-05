@@ -27,7 +27,10 @@ jobs:
       - name: Make executable lowercase
         run: mv ./Archon/bin/Release/net5.0/linux-x64/publish/Archon ./Archon/bin/Release/net5.0/linux-x64/publish/archon
       - name: Zip up files
-        run:  zip archon.zip ./Archon/bin/Release/net5.0/linux-x64/publish/archon ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb
+        run:  |
+          mv ./Archon/bin/Release/net5.0/linux-x64/publish/archon .
+          mv ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb .
+          zip archon.zip ./archon ./Archon.pdb
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
