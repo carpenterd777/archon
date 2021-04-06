@@ -114,6 +114,16 @@ namespace Archon
         /// </summary>
         public void DispatchWriteSessionAction(string userTextCommand)
         {
+            DispatchWriteSessionAction(userTextCommand, DateTime.Now);
+        }
+
+        /// <summary>
+        /// A transaction center for all of the user text commands or the note input that could be received.
+        /// Accepts a DateTime for testing.
+        /// Command values are "exit", "e", "e!", "tr", "quit", "q", and "q!".
+        /// </summary>
+        public void DispatchWriteSessionAction(string userTextCommand, DateTime dt)
+        {
             switch (userTextCommand)
             {
                 case "exit":
@@ -144,7 +154,7 @@ namespace Archon
                     forceExitUserTextCommand(userTextCommand);
                     break;
                 default:
-                    noteUserText(userTextCommand);
+                    noteUserText(userTextCommand, dt);
                     break;
             }
         }
@@ -381,20 +391,29 @@ namespace Archon
         }
 
         /// <summary>
-        /// Adds a note entry to the list of all entries. Changes display so that the timestamp is prepended to the line the
-        /// user pressed <Enter> on.
+        /// Adds a note entry to the list of all entries. Changes display so that the current timestamp is prepended to the 
+        /// line the user pressed <Enter> on.
         /// </summary>
         private void noteUserText(string note)
         {
+            noteUserText(note, new DateTime());
+        }
+
+        /// <summary>
+        /// Adds a note entry to the list of all entries. Changes display so that the timestamp is prepended to the line the
+        /// user pressed <Enter> on.
+        /// </summary>
+        private void noteUserText(string note, DateTime dt)
+        {
             resetForceExitWarning();
             // Create timestamp for this instant
-            Timestamp tsNow = new();
+            Timestamp tsNow = new(dt);
             // Create a text entry object using note and timestamp
             TextEntry entry = new(note, tsNow);
             // Add text entry object to list of all entries
             _entries.Add(entry);
-            // Change display of last line so that timestamp in string form is prepended to it
-            rewriteLineAbove($"{tsNow.ToString()} {note}");
+            // Change display of last line(s) so that timestamp in string form is prepended to it
+            rewriteLinesAbove($"{tsNow.ToString()} {note}");
         }
 
         private void warn(string text)
@@ -464,10 +483,25 @@ namespace Archon
 
         private void rewriteLineAbove(string newLineAbove)
         {
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
-            Console.WriteLine(""); // clear the line
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
-            Console.WriteLine(newLineAbove);
+            rewriteLinesAbove(newLineAbove, 1);
+        }
+
+        private void rewriteLinesAbove(string newLineAbove, int numberOfLines)
+        {
+            Console.SetCursorPosition(0, Console.CursorTop - numberOfLines);
+            for (int i = 0; i < numberOfLines; i++)
+            {
+                _consoleOut.WriteLine(""); // clear the line
+            }
+            Console.SetCursorPosition(0, Console.CursorTop - numberOfLines);
+            _consoleOut.WriteLine(newLineAbove);
+        }
+
+        private void rewriteLinesAbove(string newLineAbove)
+        {
+            double fractionalLines = Convert.ToDouble(newLineAbove.Length) / Convert.ToDouble(Console.BufferWidth);
+            int numberOfLines = (int)Math.Ceiling(fractionalLines);
+            rewriteLinesAbove(newLineAbove, numberOfLines);
         }
 
         private DateTime convertDateStringToDateTime(string dateString)
