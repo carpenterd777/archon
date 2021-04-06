@@ -268,18 +268,23 @@ namespace Archon.Tests
             setUp();
 
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
-            string multilineNote = "";
-            for (int i = 0; i < Console.BufferWidth + 1; i++)
+
+            // this cannot be tested if not being run in a console
+            if (Console.BufferWidth > 1)
             {
-                multilineNote += "a";
+                string multilineNote = "";
+                for (int i = 0; i < Console.BufferWidth + 1; i++)
+                {
+                    multilineNote += "a";
+                }
+
+                wsm.DispatchWriteSessionAction(multilineNote, new DateTime(2015, 4, 12, 17, 33, 0, 0));
+
+                string actual = mockConsoleOut.ToString().Split("\n")[2]; // first two elements are cleared lines
+
+                actual.Should().Be($"[5:33 PM] {multilineNote}", "because the general command was more than one line long");
+                tearDown();
             }
-
-            wsm.DispatchWriteSessionAction(multilineNote, new DateTime(2015, 4, 12, 17, 33, 0, 0));
-
-            string actual = mockConsoleOut.ToString().Split("\n")[2]; // first two elements are cleared lines
-
-            actual.Should().Be($"[5:33 PM] {multilineNote}", "because the general command was more than one line long");
-            tearDown();
         }
 
         [Fact]
@@ -288,18 +293,23 @@ namespace Archon.Tests
             setUp();
 
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
-            string multilineNote = "";
-            for (int i = 0; i < (4 * Console.BufferWidth) + 1; i++)
+
+            // this cannot be tested if not being run in a console
+            if (Console.BufferWidth > 1)
             {
-                multilineNote += "a";
+                string multilineNote = "";
+                for (int i = 0; i < (4 * Console.BufferWidth) + 1; i++)
+                {
+                    multilineNote += "a";
+                }
+
+                wsm.DispatchWriteSessionAction(multilineNote, new DateTime(2015, 4, 12, 17, 33, 0, 0));
+
+                string actual = mockConsoleOut.ToString().Split("\n")[5]; // first four elements are cleared lines
+
+                actual.Should().Be($"[5:33 PM] {multilineNote}", "because the general command was four lines long");
+                tearDown();
             }
-
-            wsm.DispatchWriteSessionAction(multilineNote, new DateTime(2015, 4, 12, 17, 33, 0, 0));
-
-            string actual = mockConsoleOut.ToString().Split("\n")[5]; // first four elements are cleared lines
-
-            actual.Should().Be($"[5:33 PM] {multilineNote}", "because the general command was four lines long");
-            tearDown();
         }
     }
 }
