@@ -254,12 +254,17 @@ namespace Archon.Tests
             setUp();
 
             WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
-            wsm.DispatchWriteSessionAction("a note", new DateTime(2015, 4, 12, 17, 33, 0, 0));
 
-            string actual = mockConsoleOut.ToString().Split("\n")[1]; // first element is cleared line
+            // this cannot be tested if not being run in a console
+            if (Console.BufferWidth > 1)
+            {
+                wsm.DispatchWriteSessionAction("a note", new DateTime(2015, 4, 12, 17, 33, 0, 0));
 
-            actual.Should().Be("[5:33 PM] a note", "because the user did not type in a specific command");
-            tearDown();
+                string actual = mockConsoleOut.ToString().Split("\n")[1]; // first element is cleared line
+
+                actual.Should().Be("[5:33 PM] a note", "because the user did not type in a specific command");
+                tearDown();
+            }
         }
 
         [Fact]
