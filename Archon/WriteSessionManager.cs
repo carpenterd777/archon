@@ -114,7 +114,7 @@ namespace Archon
         /// </summary>
         public void DispatchWriteSessionAction(string userTextCommand)
         {
-            DispatchWriteSessionAction(userTextCommand, new DateTime());
+            DispatchWriteSessionAction(userTextCommand, DateTime.Now);
         }
 
         /// <summary>
