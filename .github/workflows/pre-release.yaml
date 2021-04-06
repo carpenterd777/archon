@@ -30,7 +30,7 @@ jobs:
         run:  |
           mv ./Archon/bin/Release/net5.0/linux-x64/publish/archon .
           mv ./Archon/bin/Release/net5.0/linux-x64/publish/Archon.pdb .
-          zip archon.zip ./archon ./Archon.pdb install.py
+          zip archon.zip ./archon ./Archon.pdb ./install.py
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
