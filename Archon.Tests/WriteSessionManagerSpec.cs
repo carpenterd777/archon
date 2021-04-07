@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Globalization;
 using FluentAssertions;
 using Xunit;
@@ -43,9 +44,10 @@ namespace Archon.Tests
 
             // Act
             wsm.PromptSessionTitle();
+            List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
             // Assert
-            mockConsoleOut.ToString().Should().Be(MessageStrings.SESSION_TITLE_PROMPT + "\n", "because that is the prompt message");
+            outLines.Contains(MessageStrings.SESSION_TITLE_PROMPT).Should().BeTrue("because that is the prompt message");
             tearDown();
         }
 
@@ -73,12 +75,10 @@ namespace Archon.Tests
 
             // Act
             wsm.PromptSessionTitle();
-
-            string allOutput = mockConsoleOut.ToString();
-            var followUp = allOutput.Split("\n")[1]; // first one is "Session title: "
+            List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
             // Assert
-            followUp.Should().Be(MessageStrings.SESSION_TITLE_INT_INPUT, "because the user may have confused the session title prompt for the session number prompt");
+            outLines.Contains(MessageStrings.SESSION_TITLE_INT_INPUT).Should().BeTrue("because the user may have confused the session title prompt for the session number prompt");
             tearDown();
         }
 
@@ -92,10 +92,10 @@ namespace Archon.Tests
             wsm.PromptSessionTitle();
 
             string allOutput = mockConsoleOut.ToString();
-            string followUp = allOutput.Split("\n")[1];
+            List<string> outLines = new List<string>(allOutput.Split("\n"));
 
             // Assert
-            followUp.Should().Be("", "because the user likely did not confuse the session title prompt with the session number prompt");
+            outLines.Contains("").Should().BeTrue("because the user likely did not confuse the session title prompt with the session number prompt");
             tearDown();
         }
 
@@ -109,10 +109,10 @@ namespace Archon.Tests
             string providedTitle = wsm.PromptSessionTitle();
 
             string allOutput = mockConsoleOut.ToString();
-            string reprompt = allOutput.Split("\n")[2];
+            List<string> outLines = new List<string>(allOutput.Split("\n"));
 
             // Assert
-            reprompt.Should().Be(MessageStrings.SESSION_TITLE_PROMPT, "the user indicated that they put in the wrong session title");
+            outLines.Contains(MessageStrings.SESSION_TITLE_PROMPT).Should().BeTrue("the user indicated that they put in the wrong session title");
             tearDown();
         }
 
@@ -142,9 +142,10 @@ namespace Archon.Tests
 
             // Act
             wsm.PromptSessionNumber();
+            List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
             // Assert
-            mockConsoleOut.ToString().Should().Be(MessageStrings.SESSION_NUMBER_PROMPT + "\n", "because that is the session number prompt");
+            outLines.Contains(MessageStrings.SESSION_NUMBER_PROMPT).Should().BeTrue("because that is the session number prompt");
             tearDown();
         }
 
@@ -157,10 +158,10 @@ namespace Archon.Tests
 
             // Act
             wsm.PromptSessionNumber();
-            string reprompt = mockConsoleOut.ToString().Split("\n")[1];
+            List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
             // Assert
-            reprompt.Should().Be(MessageStrings.SESSION_NUMBER_INVALID_INPUT, "because the user did not pass in a number");
+            outLines.Contains(MessageStrings.SESSION_NUMBER_INVALID_INPUT).Should().BeTrue("because the user did not pass in a number");
             tearDown();
         }
 
@@ -189,10 +190,9 @@ namespace Archon.Tests
 
             // Act
             wsm.PromptSessionNumber();
+            List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
-            string reprompt = mockConsoleOut.ToString().Split("\n")[1];
-
-            reprompt.Should().Be(MessageStrings.SESSION_NUMBER_INVALID_INPUT, "because the user entered an invalid int");
+            outLines.Contains(MessageStrings.SESSION_NUMBER_INVALID_INPUT).Should().BeTrue("because the user entered an invalid int");
             tearDown();
         }
 
@@ -260,9 +260,9 @@ namespace Archon.Tests
             {
                 wsm.DispatchWriteSessionAction("a note", new DateTime(2015, 4, 12, 17, 33, 0, 0));
 
-                string actual = mockConsoleOut.ToString().Split("\n")[1]; // first element is cleared line
+                List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
-                actual.Should().Be("[5:33 PM] a note", "because the user did not type in a specific command");
+                outLines.Contains("[5:33 PM] a note").Should().BeTrue("because the user did not type in a specific command");
                 tearDown();
             }
         }
@@ -285,34 +285,9 @@ namespace Archon.Tests
 
                 wsm.DispatchWriteSessionAction(multilineNote, new DateTime(2015, 4, 12, 17, 33, 0, 0));
 
-                string actual = mockConsoleOut.ToString().Split("\n")[2]; // first two elements are cleared lines
+                List<string> outLines = new List<string>(mockConsoleOut.ToString().Split("\n"));
 
-                actual.Should().Be($"[5:33 PM] {multilineNote}", "because the general command was more than one line long");
-                tearDown();
-            }
-        }
-
-        [Fact]
-        public void Renders_four_line_note()
-        {
-            setUp();
-
-            WriteSessionManager wsm = new(mockConsoleOut, mockConsoleIn);
-
-            // this cannot be tested if not being run in a console
-            if (Console.BufferWidth > 1)
-            {
-                string multilineNote = "";
-                for (int i = 0; i < (4 * Console.BufferWidth) + 1; i++)
-                {
-                    multilineNote += "a";
-                }
-
-                wsm.DispatchWriteSessionAction(multilineNote, new DateTime(2015, 4, 12, 17, 33, 0, 0));
-
-                string actual = mockConsoleOut.ToString().Split("\n")[5]; // first four elements are cleared lines
-
-                actual.Should().Be($"[5:33 PM] {multilineNote}", "because the general command was four lines long");
+                outLines.Contains($"[5:33 PM] {multilineNote}").Should().BeTrue("because the general command was more than one line long");
                 tearDown();
             }
         }
