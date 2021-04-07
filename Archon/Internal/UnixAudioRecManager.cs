@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Diagnostics;
-
+using System.Text.RegularExpressions;
 using Archon.Utils;
 
 namespace Archon
@@ -63,8 +63,8 @@ namespace Archon
             string result = arecord.StandardOutput.ReadToEnd();
             arecord.WaitForExit();
 
-            // TODO: replace with regex to match all version 1s
-            if (result == "arecord: version 1.2.2 by Jaroslav Kysela <perex@perex.cz>\n")
+            Regex regex = new Regex(@"arecord: version 1.\d.\d by Jaroslav Kysela <perex@perex.cz>\n", RegexOptions.Compiled);
+            if (regex.IsMatch(result))
                 _status = RecordingManagerStatus.MicNotDetected; // mic detection happens separately
             else // alsa possibly not installed
                 _status = RecordingManagerStatus.NoCompatibleAPI;
