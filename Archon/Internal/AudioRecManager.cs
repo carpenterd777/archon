@@ -52,13 +52,13 @@ namespace Archon
         /// </summary>
         public bool CanRecord() => _status == RecordingManagerStatus.MicDetected;
 
-        public static AudioRecManager GetPlatformSpecificAudioManager()
+        public static AudioRecManager GetPlatformSpecificAudioManager(TextWriter consoleOut)
         {
             PlatformID platform = System.Environment.OSVersion.Platform;
             switch (platform)
             {
                 case PlatformID.Unix:
-                    return new UnixAudioRecManager();
+                    return new UnixAudioRecManager(consoleOut);
                 case PlatformID.Win32NT:
                     return new WinAudioRecManager();
                 default:

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Diagnostics;
 
 using Archon.Utils;
@@ -12,6 +13,7 @@ namespace Archon
     internal class UnixAudioRecManager : AudioRecManager
     {
         private Process _activeAlsa; // the process to record audio
+        private TextWriter _consoleOut; // represents the console output
         public override void DetectMic()
         {
             Process arecord = Utilities.CreateLinuxProcess("arecord -l");
@@ -82,8 +84,9 @@ namespace Archon
 
         // Constructors
 
-        public UnixAudioRecManager()
+        public UnixAudioRecManager(TextWriter consoleOut)
         {
+            _consoleOut = consoleOut;
             confirmAlsaInstall();
 
             if (_status == RecordingManagerStatus.MicNotDetected)
@@ -92,7 +95,7 @@ namespace Archon
             }
             else
             {
-                MessageStrings.Warn(System.Console.Out, MessageStrings.NO_ALSA);
+                MessageStrings.Warn(_consoleOut, MessageStrings.NO_ALSA);
             }
         }
     }

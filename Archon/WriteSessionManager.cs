@@ -22,7 +22,7 @@ namespace Archon
         private bool _hasWarnedBeforeForceExit = false;
         private bool _isRecordingAudio = false;
         private System.DateTime _dateCreated;
-        private AudioRecManager _audiorm = AudioRecManager.GetPlatformSpecificAudioManager();
+        private AudioRecManager _audiorm;
 
         private const string _prompt = "> ";
 
@@ -550,6 +550,7 @@ namespace Archon
             _consoleOut = consoleOut;
             _consoleIn = consoleIn;
             _dateCreated = dateCreated;
+            _audiorm = AudioRecManager.GetPlatformSpecificAudioManager(_consoleOut);
         }
     }
 }
