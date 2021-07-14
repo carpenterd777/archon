@@ -1,6 +1,8 @@
 package backend
 
 import (
+	"errors"
+	"strconv"
 	"time"
 )
 
@@ -30,4 +32,25 @@ func (s *Session) addNote(n Note) {
 		return
 	}
 	s.notes = append(s.notes, n)
+}
+
+// Ensures that a session number entered by a user is non-negative.
+//
+// The function signature is modeled to be a fyne.StringValidator.
+func ValidateSessionNumber(sessionNumber string) error {
+	if sessionNumber == "" {
+		return nil
+	}
+
+	i, err := strconv.Atoi(sessionNumber)
+
+	if err != nil {
+		return err
+	}
+
+	if i < 0 {
+		return errors.New("Session numbers cannot be less than 0")
+	}
+
+	return nil
 }

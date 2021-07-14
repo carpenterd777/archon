@@ -31,3 +31,25 @@ var _ = Describe("Sessions", func() {
 		Expect(session.notes).ToNot(ContainElement(note))
 	})
 })
+
+var _ = Describe("Session number validator", func() {
+	It("should allow positive session numbers", func() {
+		Expect(ValidateSessionNumber("1")).To(BeNil())
+	})
+
+	It("should allow empty input", func() {
+		Expect(ValidateSessionNumber("")).To(BeNil())
+	})
+
+	It("should not allow negative numbers", func() {
+		Expect(ValidateSessionNumber("-1")).ToNot(BeNil())
+	})
+
+	It("should not allow non-numeric characters", func() {
+		Expect(ValidateSessionNumber("nan")).ToNot(BeNil())
+	})
+
+	It("should not allow float numbers", func() {
+		Expect(ValidateSessionNumber("1.23")).ToNot(BeNil())
+	})
+})
