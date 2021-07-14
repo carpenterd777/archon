@@ -22,4 +22,12 @@ var _ = Describe("Sessions", func() {
 		session.addNote(note)
 		Expect(session.notes).To(ContainElement(note))
 	})
+
+	It("should not add empty notes to the session", func() {
+		session := newSession("Test", 1)
+		note := newNote("", time.Now())
+
+		session.addNote(note)
+		Expect(session.notes).ToNot(ContainElement(note))
+	})
 })

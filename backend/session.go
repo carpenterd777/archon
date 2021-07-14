@@ -25,5 +25,9 @@ func newSession(sessionTitle string, sessionNumber int) Session {
 
 // Adds a note to this session.
 func (s *Session) addNote(n Note) {
+	// if the note is empty, it is likely user error
+	if n.content == "" {
+		return
+	}
 	s.notes = append(s.notes, n)
 }
