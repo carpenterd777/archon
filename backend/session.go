@@ -57,6 +57,26 @@ func (s *Session) ToJSON() string {
 	return builder.String()
 }
 
+// Builds a session from a JSON representation of a session.
+// If the input string is invalid, returns a pointer to an empty Session and an error.
+func FromJSON(s string) (*Session, error) {
+	reader := strings.NewReader(s)
+	decoder := json.NewDecoder(reader)
+	session := Session{}
+	err := decoder.Decode(&session)
+
+	if err != nil {
+		return &Session{}, err
+	}
+
+	// rectify invalid data modified externally outside of the application
+	if session.SessionNumber < 0 {
+		session.SessionNumber = 0
+	}
+
+	return &session, nil
+}
+
 // Ensures that a session number entered by a user is non-negative.
 //
 // The function signature is modeled to be a fyne.StringValidator.
