@@ -142,3 +142,7 @@ var _ = Describe("JSON Deserialization", func() {
 		Expect(s.SessionNumber).To(Equal(0))
 	})
 })
+
+// TODO: add tests for saving functionality
+
+// TODO: add tests for loading functionality

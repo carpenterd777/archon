@@ -3,6 +3,8 @@ package backend
 import (
 	"encoding/json"
 	"errors"
+	"io/fs"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -75,6 +77,30 @@ func FromJSON(s string) (*Session, error) {
 	}
 
 	return &session, nil
+}
+
+// Writes Session data to specified file.
+func (s *Session) Save(path string) error {
+	UserRW := fs.FileMode(0600)
+	return os.WriteFile(path, []byte(s.ToJSON()), UserRW)
+}
+
+// Load Session data from specified file.
+// In the case of an error during reading the file or converting it into a session,
+// returns an empty session and an error.
+func Load(path string) (*Session, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return &Session{}, err
+	}
+
+	s, err := FromJSON(string(data))
+	if err != nil {
+		return &Session{}, err
+	}
+
+	return s, nil
+
 }
 
 // Ensures that a session number entered by a user is non-negative.
