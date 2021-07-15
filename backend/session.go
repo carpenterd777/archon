@@ -1,37 +1,60 @@
 package backend
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // Represents a single note-taking session.
 type Session struct {
-	notes         []Note    // the collection of all notes created by the user
-	date          time.Time // the date and time this session began
-	sessionTitle  string    // the name of the session, if one exists
-	sessionNumber int       // the number of the session, if one exists
+	Notes         []Note    // the collection of all notes created by the user
+	Date          time.Time // the date and time this session began
+	SessionTitle  string    // the name of the session, if one exists
+	SessionNumber int       // the number of the session, if one exists
 }
 
+// An option to customize the constructor for creating a new session.
+type NewSessionOption func(s *Session)
+
 // Create a new Session.
-func newSession(sessionTitle string, sessionNumber int) Session {
+func NewSession(sessionTitle string, sessionNumber int, options ...NewSessionOption) *Session {
 	session := Session{
-		notes:         make([]Note, 0),
-		date:          time.Now(),
-		sessionTitle:  sessionTitle,
-		sessionNumber: sessionNumber,
+		Notes:         make([]Note, 0),
+		Date:          time.Now(),
+		SessionTitle:  sessionTitle,
+		SessionNumber: sessionNumber,
 	}
-	return session
+	for _, options := range options {
+		options(&session)
+	}
+	return &session
+}
+
+// Option to create a new session with a custom date field. Primarily for use in testing.
+func withCustomDate(t time.Time) NewSessionOption {
+	return func(s *Session) {
+		s.Date = t
+	}
 }
 
 // Adds a note to this session.
-func (s *Session) addNote(n Note) {
+func (s *Session) AddNote(n Note) {
 	// if the note is empty, it is likely user error
-	if n.content == "" {
+	if n.Content == "" {
 		return
 	}
-	s.notes = append(s.notes, n)
+	s.Notes = append(s.Notes, n)
+}
+
+// Returns a JSON reprsentation of the session for purposes of serialization.
+func (s *Session) ToJSON() string {
+	builder := new(strings.Builder)
+	encoder := json.NewEncoder(builder)
+	encoder.Encode(s)
+	return builder.String()
 }
 
 // Ensures that a session number entered by a user is non-negative.

@@ -1,4 +1,4 @@
-package archon
+package main
 
 import (
 	"fyne.io/fyne/v2/test"

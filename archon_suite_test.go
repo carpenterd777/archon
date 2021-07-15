@@ -1,4 +1,4 @@
-package archon
+package main
 
 import (
 	"testing"

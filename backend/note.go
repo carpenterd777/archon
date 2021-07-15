@@ -6,15 +6,15 @@ import (
 
 // Represents an entry into the session log made by the user.
 type Note struct {
-	content string    // the contents of the note as input by a user
-	time    time.Time // the time at which the note was created
+	Content string    // the contents of the note as input by a user
+	Time    time.Time // the time at which the note was created
 }
 
 // Create a new Note.
-func newNote(content string, currentTime time.Time) Note {
+func NewNote(content string, currentTime time.Time) Note {
 	note := Note{
-		content: content,
-		time:    currentTime,
+		Content: content,
+		Time:    currentTime,
 	}
 	return note
 }
