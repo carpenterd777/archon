@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestArchon(t *testing.T) {
+func TestBackend(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Backend Suite")
 }
