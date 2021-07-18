@@ -39,6 +39,8 @@ func (nbr *NoteBoxRenderer) Layout(size fyne.Size) {
 func (nbr *NoteBoxRenderer) Refresh() {
 	nbr.Layout(nbr.noteBox.Size())
 	canvas.Refresh(nbr.noteBox)
+	nbr.noteContentText.Text = nbr.noteBox.note.Content
+	nbr.noteTimeText.Text = nbr.noteBox.note.Time.Format("Jan 2 3:04 PM")
 }
 
 // Returns the list of objects this renderer renders. Necessary to implement the fyne.WidgetRenderer interface.
@@ -79,6 +81,18 @@ func (nb *NoteBox) CreateRenderer() fyne.WidgetRenderer {
 		objects:         objects,
 		noteBox:         nb,
 	}
+}
+
+// Set the text of the content of a notebox.
+func (nb *NoteBox) SetContent(content string) {
+	nb.note.Content = content
+	nb.Refresh()
+}
+
+// Set the time of a notebox's timestamp.
+func (nb *NoteBox) SetTime(time time.Time) {
+	nb.note.Time = time
+	nb.Refresh()
 }
 
 // Creates a new NoteBox.
