@@ -1,12 +1,16 @@
 package main
 
 import (
+	"io"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/archon/backend"
 	"github.com/archon/gui"
@@ -64,6 +68,7 @@ type MainInterface struct {
 	widget.BaseWidget
 	session *backend.Session // The state of this application session
 	entry   *gui.EnterEntry  // The entry field
+	window  fyne.Window      // the window this is rendered in
 }
 
 // Creates a renderer for the main window. Necessary to implement the widget.Widget inteface.
@@ -75,7 +80,14 @@ func (m *MainInterface) CreateRenderer() fyne.WidgetRenderer {
 		m.listUpdateItem,
 	)
 
-	cont := container.NewBorder(nil, m.entry, nil, nil, list)
+	toolbar := widget.NewToolbar(
+		widget.NewToolbarAction(theme.DocumentSaveIcon(), m.Save),
+		widget.NewToolbarAction(theme.FolderOpenIcon(), m.Load),
+	)
+	sep := canvas.NewRectangle(theme.ForegroundColor())
+	toolCont := container.NewVBox(toolbar, sep)
+
+	cont := container.NewBorder(toolCont, m.entry, nil, nil, list)
 	return &MainInterfaceRenderer{
 		cont: cont,
 		mi:   m,
@@ -83,33 +95,111 @@ func (m *MainInterface) CreateRenderer() fyne.WidgetRenderer {
 
 }
 
+// Returns the length of the data the list widget is displaying.
 func (m *MainInterface) listLength() int {
 	return len(m.session.Notes)
 }
 
+// Creates a template item for the list widget.
 func (m *MainInterface) listCreateItem() fyne.CanvasObject {
 	return gui.NewNoteBox("", time.Time{})
 }
 
+// Sets the actual content of a template item for the list widget when it is displayed.
 func (m *MainInterface) listUpdateItem(i widget.ListItemID, o fyne.CanvasObject) {
 	o.(*gui.NoteBox).SetContent(m.session.Notes[i].Content)
 	o.(*gui.NoteBox).SetTime(m.session.Notes[i].Time)
 }
 
-func NewMainInterface() *MainInterface {
+func (m *MainInterface) Save() {
+	// if the user has yet to save their work
+	if m.session.Path == "" {
+		dialog.ShowFileSave(
+			m.save,
+			m.window,
+		)
+	} else { // the user has already saved their work
+		err := m.session.Save()
+		if err != nil {
+			dialog.ShowError(err, m.window)
+		}
+	}
+}
+
+func (m *MainInterface) save(uc fyne.URIWriteCloser, e error) {
+	// the user pressed 'cancel'
+	if uc == nil {
+		return
+	}
+
+	reader := strings.NewReader(m.session.ToJSON())
+	_, err := reader.WriteTo(uc)
+
+	if e != nil {
+		dialog.ShowError(e, m.window)
+	}
+	if err != nil {
+		dialog.ShowError(err, m.window)
+	}
+	m.session.Path = uc.URI().Path()
+}
+
+func (m *MainInterface) Load() {
+	dialog.ShowFileOpen(
+		m.load,
+		m.window,
+	)
+}
+
+func (m *MainInterface) load(uc fyne.URIReadCloser, e error) {
+	// the user pressed 'cancel'
+	if uc == nil {
+		return
+	}
+
+	builder := new(strings.Builder)
+	data := make([]byte, 1024)
+
+	// read data from file into array
+	for {
+		_, err := uc.Read(data)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			dialog.ShowError(err, m.window)
+		}
+	}
+
+	// write data into string builder
+	builder.Write(data)
+
+	// construct session from string
+	var err error
+	m.session, err = backend.FromJSON(builder.String())
+	m.entry.SetSession(m.session)
+	if err != nil {
+		dialog.ShowError(err, m.window)
+	}
+}
+
+// Create an interface. This interface composes the entire window.
+func NewMainInterface(window fyne.Window) *MainInterface {
 	session := backend.NewSession(DEFAULT_SESSION_NAME, DEFAULT_SESSION_NUMBER)
-	textEntry := gui.NewEnterEntry(session)
-	mi := &MainInterface{session: session, entry: textEntry}
+	mi := &MainInterface{session: session, window: window}
+	textEntry := gui.NewEnterEntry(mi.session)
+	mi.entry = textEntry
 	mi.ExtendBaseWidget(mi)
 	return mi
 }
 
+// Apply custom settings to the window.
 func setUpWindow(window fyne.Window) {
-	main := NewMainInterface()
-	window.SetTitle(main.session.SessionTitle + " - " + APP_NAME)
-	window.SetContent(main)
-	window.Resize(fyne.NewSize(STARTING_WIDTH, STARTING_HEIGHT))
-	window.Canvas().Focus(main.entry)
+	main := NewMainInterface(window)
+	main.window.SetTitle(main.session.SessionTitle + " - " + APP_NAME)
+	main.window.SetContent(main)
+	main.window.Resize(fyne.NewSize(STARTING_WIDTH, STARTING_HEIGHT))
+	main.window.Canvas().Focus(main.entry)
 }
 
 func main() {
