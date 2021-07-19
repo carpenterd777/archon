@@ -16,6 +16,7 @@ type Session struct {
 	Date          time.Time // the date and time this session began
 	SessionTitle  string    // the name of the session, if one exists
 	SessionNumber int       // the number of the session, if one exists
+	Path          string    // the path to the file where this session is saved, if one exists
 }
 
 // An option to customize the constructor for creating a new session.
@@ -28,6 +29,7 @@ func NewSession(sessionTitle string, sessionNumber int, options ...NewSessionOpt
 		Date:          time.Now(),
 		SessionTitle:  sessionTitle,
 		SessionNumber: sessionNumber,
+		Path:          "",
 	}
 	for _, options := range options {
 		options(&session)
@@ -80,9 +82,9 @@ func FromJSON(s string) (*Session, error) {
 }
 
 // Writes Session data to specified file.
-func (s *Session) Save(path string) error {
+func (s *Session) Save() error {
 	UserRW := fs.FileMode(0600)
-	return os.WriteFile(path, []byte(s.ToJSON()), UserRW)
+	return os.WriteFile(s.Path, []byte(s.ToJSON()), UserRW)
 }
 
 // Load Session data from specified file.
