@@ -10,11 +10,6 @@ import (
 	"github.com/archon/backend"
 )
 
-const MIN_WIDTH = 400
-const MIN_HEIGHT = 40
-
-const DATE_TEXT_FACTOR = 0.7
-
 // Handles the rendering for NoteBoxes. Implements the fyne.WidgetRenderer interface.
 type NoteBoxRenderer struct {
 	noteContentText *canvas.Text        // the text of the content of the note
@@ -25,13 +20,15 @@ type NoteBoxRenderer struct {
 
 // The minimum size of a NoteBox. Necessary to implement the fyne.WidgetRenderer interface.
 func (nbr *NoteBoxRenderer) MinSize() fyne.Size {
-	return fyne.NewSize(MIN_WIDTH, MIN_HEIGHT)
+	var min_width, min_height float32 = 400, 40
+	return fyne.NewSize(min_width, min_height)
 }
 
 // Position and resize the items within the NoteBox based on the input size. Necessary to implement the fyne.WidgetRenderer interface.
 func (nbr *NoteBoxRenderer) Layout(size fyne.Size) {
+	var date_text_factor float32 = 0.7
 	nbr.noteContentText.Move(fyne.NewPos(0+theme.Padding(), size.Height/3))
-	nbr.noteTimeText.TextSize = theme.TextSize() * DATE_TEXT_FACTOR
+	nbr.noteTimeText.TextSize = theme.TextSize() * date_text_factor
 	nbr.noteTimeText.Move(fyne.NewPos(size.Width-theme.Padding(), nbr.noteContentText.Position().Y))
 }
 
