@@ -32,10 +32,16 @@ func (e *EnterEntry) TypedKey(key *fyne.KeyEvent) {
 	}
 }
 
+// Sets this entry's seesion to the passed session.
+func (e *EnterEntry) SetSession(session *backend.Session) {
+	e.session = session
+}
+
 // Creates a new Entry that adds a note to the passed session when Enter is pressed.
 func NewEnterEntry(session *backend.Session) *EnterEntry {
 	entry := &EnterEntry{session: session}
 	entry.Entry.MultiLine = true
+	entry.Entry.Wrapping = fyne.TextWrapWord
 	entry.ExtendBaseWidget(entry)
 	return entry
 }
