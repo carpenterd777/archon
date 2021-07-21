@@ -43,7 +43,7 @@ var _ = Describe("Session number validator", func() {
 	})
 
 	It("should not allow negative numbers", func() {
-		Expect(ValidateSessionNumber("-1")).ToNot(BeNil())
+		Expect(ValidateSessionNumber("-2")).ToNot(BeNil())
 	})
 
 	It("should not allow non-numeric characters", func() {
