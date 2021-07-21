@@ -79,6 +79,13 @@ type MainInterface struct {
 	window      fyne.Window            // the window this is rendered in
 }
 
+// Bind the session info to the binding strings.
+func (m *MainInterface) BindSessionInfo() {
+	m.boundTitle = binding.BindString(&m.session.SessionTitle)
+	m.boundNumber = binding.NewString()
+	m.boundNumber.Set(strconv.Itoa(m.session.SessionNumber))
+}
+
 // Creates a renderer for the main window. Necessary to implement the widget.Widget inteface.
 func (m *MainInterface) CreateRenderer() fyne.WidgetRenderer {
 
@@ -112,35 +119,39 @@ func (m *MainInterface) CreateRenderer() fyne.WidgetRenderer {
 
 }
 
-// Returns the length of the data the list widget is displaying.
-func (m *MainInterface) listLength() int {
-	return len(m.session.Notes)
+// Handles the actions taken when the session info button is tapped.
+func (m *MainInterface) HandleSessionInfoButton() {
+	titleEntry := widget.NewEntryWithData(m.boundTitle)
+	numberEntry := widget.NewEntryWithData(m.boundNumber)
+	numberEntry.Validator = backend.ValidateSessionNumber
+
+	titleForm := widget.NewFormItem("Session title", titleEntry)
+	numberForm := widget.NewFormItem("Session number", numberEntry)
+	formSize := fyne.NewSize(m.window.Canvas().Size().Width*0.8, m.window.Canvas().Size().Height*0.5)
+	callback := func(confirm bool) {
+		if confirm {
+			number, _ := m.boundNumber.Get()
+			numAsInt, _ := strconv.Atoi(number)
+			if numAsInt != m.session.SessionNumber {
+				m.session.SessionNumber = numAsInt
+			}
+			m.infoButton.SetText(m.getInfoButtonText())
+		}
+	}
+	dialog := dialog.NewForm("", "Confirm", "Cancel", []*widget.FormItem{titleForm, numberForm}, callback, m.window)
+	dialog.Resize(formSize)
+	dialog.Show()
 }
 
-// Creates a template item for the list widget.
-func (m *MainInterface) listCreateItem() fyne.CanvasObject {
-	return gui.NewNoteBox("", time.Time{})
+// Open an existing session file. Shows a dialog box to open a file.
+func (m *MainInterface) Load() {
+	dialog.ShowFileOpen(
+		m.load,
+		m.window,
+	)
 }
 
-// Sets the actual content of a template item for the list widget when it is displayed.
-func (m *MainInterface) listUpdateItem(i widget.ListItemID, o fyne.CanvasObject) {
-	o.(*gui.NoteBox).SetContent(m.session.Notes[i].Content)
-	o.(*gui.NoteBox).SetTime(m.session.Notes[i].Time)
-}
-
-func (m *MainInterface) animateIndicator() {
-	disabledToForeground := canvas.NewColorRGBAAnimation(
-		theme.DisabledColor(),
-		theme.ForegroundColor(),
-		canvas.DurationShort,
-		func(c color.Color) {
-			m.indicator.SetColor(c)
-			m.indicator.Refresh()
-		})
-	disabledToForeground.AutoReverse = true
-	disabledToForeground.Start()
-}
-
+// Save the current session. Show a dialog box if the user has yet to save before.
 func (m *MainInterface) Save() {
 	// if the user has yet to save their work
 	if m.session.Path == "" {
@@ -158,32 +169,76 @@ func (m *MainInterface) Save() {
 	}
 }
 
-func (m *MainInterface) save(uc fyne.URIWriteCloser, e error) {
-	// the user pressed 'cancel'
-	if uc == nil {
-		return
+// Set the title of the window based on the session title, session number, and path.
+func (m *MainInterface) SetWindowTitle() {
+	window_title := ""
+
+	if m.session.SessionTitle != "" {
+		window_title = m.session.SessionTitle
 	}
 
-	reader := strings.NewReader(m.session.ToJSON())
-	_, err := reader.WriteTo(uc)
+	if m.session.SessionTitle == "" && m.session.SessionNumber > backend.NO_SESSION_NUMBER {
+		window_title = fmt.Sprintf("Session %d %s", m.session.SessionNumber, m.session.Path)
+	}
 
-	if e != nil {
-		dialog.ShowError(e, m.window)
+	if len(window_title) > MAX_WIN_TITLE_LENGTH {
+		// subtract 3 to account for the max length, subtract 1 because indexing starts at 0
+		window_title = window_title[:MAX_WIN_TITLE_LENGTH-3-1] + "..."
 	}
-	if err != nil {
-		dialog.ShowError(err, m.window)
-	}
-	m.session.Path = uc.URI().Path()
-	m.SetWindowTitle()
+	window_title = fmt.Sprintf(window_title+" - %s", APP_NAME)
+	m.window.SetTitle(window_title)
 }
 
-func (m *MainInterface) Load() {
-	dialog.ShowFileOpen(
-		m.load,
-		m.window,
-	)
+// Flash the saving indicator.
+func (m *MainInterface) animateIndicator() {
+	disabledToForeground := canvas.NewColorRGBAAnimation(
+		theme.DisabledColor(),
+		theme.ForegroundColor(),
+		canvas.DurationShort,
+		func(c color.Color) {
+			m.indicator.SetColor(c)
+			m.indicator.Refresh()
+		})
+	disabledToForeground.AutoReverse = true
+	disabledToForeground.Start()
 }
 
+// Builds the string that will serve as the info button text.
+func (m *MainInterface) getInfoButtonText() string {
+	buttonText := m.session.Date.Format("1/2/2006")
+	number, _ := m.boundNumber.Get()
+	title, _ := m.boundTitle.Get()
+	numAsInt, _ := strconv.Atoi(number)
+	if numAsInt > backend.NO_SESSION_NUMBER {
+		buttonText += " Session " + strconv.Itoa(m.session.SessionNumber)
+		if title != "" {
+			buttonText += ":"
+		}
+	}
+	if title != "" {
+		buttonText += " " + m.session.SessionTitle
+	}
+
+	return buttonText
+}
+
+// Returns the length of the data the list widget is displaying.
+func (m *MainInterface) listLength() int {
+	return len(m.session.Notes)
+}
+
+// Creates a template item for the list widget.
+func (m *MainInterface) listCreateItem() fyne.CanvasObject {
+	return gui.NewNoteBox("", time.Time{})
+}
+
+// Sets the actual content of a template item for the list widget when it is displayed.
+func (m *MainInterface) listUpdateItem(i widget.ListItemID, o fyne.CanvasObject) {
+	o.(*gui.NoteBox).SetContent(m.session.Notes[i].Content)
+	o.(*gui.NoteBox).SetTime(m.session.Notes[i].Time)
+}
+
+// Creates a session from the loaded data. Displays a dialog box if there is an error loading the session.
 func (m *MainInterface) load(uc fyne.URIReadCloser, e error) {
 	// the user pressed 'cancel'
 	if uc == nil {
@@ -220,73 +275,24 @@ func (m *MainInterface) load(uc fyne.URIReadCloser, e error) {
 	m.infoButton.SetText(m.getInfoButtonText())
 }
 
-// Set the title of the window based on the session title, session number, and path.
-func (m *MainInterface) SetWindowTitle() {
-	window_title := ""
-
-	if m.session.SessionTitle != "" {
-		window_title = m.session.SessionTitle
+// Writes the current session to file, and displays a dialog box with any errors if they occur.
+func (m *MainInterface) save(uc fyne.URIWriteCloser, e error) {
+	// the user pressed 'cancel'
+	if uc == nil {
+		return
 	}
 
-	if m.session.SessionTitle == "" && m.session.SessionNumber > backend.NO_SESSION_NUMBER {
-		window_title = fmt.Sprintf("Session %d %s", m.session.SessionNumber, m.session.Path)
+	reader := strings.NewReader(m.session.ToJSON())
+	_, err := reader.WriteTo(uc)
+
+	if e != nil {
+		dialog.ShowError(e, m.window)
 	}
-
-	if len(window_title) > MAX_WIN_TITLE_LENGTH {
-		// subtract 3 to account for the max length, subtract 1 because indexing starts at 0
-		window_title = window_title[:MAX_WIN_TITLE_LENGTH-3-1] + "..."
+	if err != nil {
+		dialog.ShowError(err, m.window)
 	}
-	window_title = fmt.Sprintf(window_title+" - %s", APP_NAME)
-	m.window.SetTitle(window_title)
-}
-
-// Builds the string that will serve as the info button text.
-func (m *MainInterface) getInfoButtonText() string {
-	buttonText := m.session.Date.Format("1/2/2006")
-	number, _ := m.boundNumber.Get()
-	title, _ := m.boundTitle.Get()
-	numAsInt, _ := strconv.Atoi(number)
-	if numAsInt > backend.NO_SESSION_NUMBER {
-		buttonText += " Session " + strconv.Itoa(m.session.SessionNumber)
-		if title != "" {
-			buttonText += ":"
-		}
-	}
-	if title != "" {
-		buttonText += " " + m.session.SessionTitle
-	}
-
-	return buttonText
-}
-
-// Handles the actions taken when the session info button is tapped.
-func (m *MainInterface) HandleSessionInfoButton() {
-	titleEntry := widget.NewEntryWithData(m.boundTitle)
-	numberEntry := widget.NewEntryWithData(m.boundNumber)
-	numberEntry.Validator = backend.ValidateSessionNumber
-
-	titleForm := widget.NewFormItem("Session title", titleEntry)
-	numberForm := widget.NewFormItem("Session number", numberEntry)
-	formSize := fyne.NewSize(m.window.Canvas().Size().Width*0.8, m.window.Canvas().Size().Height*0.5)
-	callback := func(confirm bool) {
-		if confirm {
-			number, _ := m.boundNumber.Get()
-			numAsInt, _ := strconv.Atoi(number)
-			if numAsInt != m.session.SessionNumber {
-				m.session.SessionNumber = numAsInt
-			}
-			m.infoButton.SetText(m.getInfoButtonText())
-		}
-	}
-	dialog := dialog.NewForm("", "Confirm", "Cancel", []*widget.FormItem{titleForm, numberForm}, callback, m.window)
-	dialog.Resize(formSize)
-	dialog.Show()
-}
-
-func (m *MainInterface) BindSessionInfo() {
-	m.boundTitle = binding.BindString(&m.session.SessionTitle)
-	m.boundNumber = binding.NewString()
-	m.boundNumber.Set(strconv.Itoa(m.session.SessionNumber))
+	m.session.Path = uc.URI().Path()
+	m.SetWindowTitle()
 }
 
 // Create an interface. This interface composes the entire window.
