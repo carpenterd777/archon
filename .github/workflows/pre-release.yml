@@ -29,18 +29,18 @@ jobs:
     - name: Test
       run: go test -v ./...
       
-    - name: Add releases
-      run: |
-        go get fyne.io/fyne/v2/cmd/fyne
-        fyne package -os linux
-        fyne package -os windows
-    - uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "Development Build"
-        files: |
-          LICENSE
-          ./archon.tar.gz
-          ./archon.exe
+#     - name: Add releases
+#       run: |
+#         go get fyne.io/fyne/v2/cmd/fyne
+#         fyne package -os linux
+#         fyne package -os windows
+#     - uses: "marvinpinto/action-automatic-releases@latest"
+#       with:
+#         repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#         automatic_release_tag: "latest"
+#         prerelease: true
+#         title: "Development Build"
+#         files: |
+#           LICENSE
+#           ./archon.tar.gz
+#           ./archon.exe
