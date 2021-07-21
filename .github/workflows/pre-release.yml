@@ -25,7 +25,6 @@ jobs:
       run: go test -v ./...
       
     - name: Add releases
-    - name: Update releases
       run: |
         go get fyne.io/fyne/v2/cmd/fyne
         fyne package -os linux
