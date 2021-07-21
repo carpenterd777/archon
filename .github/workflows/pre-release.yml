@@ -31,7 +31,6 @@ jobs:
       
     - name: Add releases
       run: |
-        go get fyne.io/fyne/v2/cmd/fyne
         fyne package -os linux
         fyne package -os windows
     - uses: "marvinpinto/action-automatic-releases@latest"
