@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"io"
 	"strings"
@@ -19,9 +20,9 @@ import (
 
 const APP_NAME = "Archon"
 const DEFAULT_SESSION_NAME = "Untitled Session"
-const DEFAULT_SESSION_NUMBER = 0
 const STARTING_WIDTH = 600
 const STARTING_HEIGHT = 400
+const MAX_WIN_TITLE_LENGTH = 50
 
 // Handles the rendering for NoteBoxes. Implements the fyne.WidgetRenderer interface.
 type MainInterfaceRenderer struct {
@@ -158,6 +159,7 @@ func (m *MainInterface) save(uc fyne.URIWriteCloser, e error) {
 		dialog.ShowError(err, m.window)
 	}
 	m.session.Path = uc.URI().Path()
+	m.SetWindowTitle()
 }
 
 func (m *MainInterface) Load() {
@@ -197,11 +199,33 @@ func (m *MainInterface) load(uc fyne.URIReadCloser, e error) {
 	if err != nil {
 		dialog.ShowError(err, m.window)
 	}
+	m.session.Path = uc.URI().Path()
+	m.SetWindowTitle()
+}
+
+// Set the title of the window based on the session title, session number, and path.
+func (m *MainInterface) SetWindowTitle() {
+	window_title := ""
+
+	if m.session.SessionTitle != "" {
+		window_title = m.session.SessionTitle
+	}
+
+	if m.session.SessionTitle == "" && m.session.SessionNumber > backend.NO_SESSION_NUMBER {
+		window_title = fmt.Sprintf("Session %d %s", m.session.SessionNumber, m.session.Path)
+	}
+
+	if len(window_title) > MAX_WIN_TITLE_LENGTH {
+		// subtract 3 to account for the max length, subtract 1 because indexing starts at 0
+		window_title = window_title[:MAX_WIN_TITLE_LENGTH-3-1] + "..."
+	}
+	window_title = fmt.Sprintf(window_title+" - %s", APP_NAME)
+	m.window.SetTitle(window_title)
 }
 
 // Create an interface. This interface composes the entire window.
 func NewMainInterface(window fyne.Window) *MainInterface {
-	session := backend.NewSession(DEFAULT_SESSION_NAME, DEFAULT_SESSION_NUMBER)
+	session := backend.NewSession(DEFAULT_SESSION_NAME, backend.NO_SESSION_NUMBER)
 	mi := &MainInterface{session: session, window: window}
 	textEntry := gui.NewEnterEntry(mi.session)
 	mi.entry = textEntry
