@@ -18,9 +18,6 @@ jobs:
       with:
         go-version: 1.16
       
-    - name: Set up Fyne dependencies
-      run: apt-get install golang gcc libgl1-mesa-dev xorg-dev
-      
     - name: Set up Fyne
       run: go get fyne.io/fyne/v2
 
