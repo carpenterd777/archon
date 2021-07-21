@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const NO_SESSION_NUMBER = -1
+
 // Represents a single note-taking session.
 type Session struct {
 	Notes         []Note    // the collection of all notes created by the user
@@ -74,8 +76,8 @@ func FromJSON(s string) (*Session, error) {
 	}
 
 	// rectify invalid data modified externally outside of the application
-	if session.SessionNumber < 0 {
-		session.SessionNumber = 0
+	if session.SessionNumber < NO_SESSION_NUMBER {
+		session.SessionNumber = NO_SESSION_NUMBER
 	}
 
 	return &session, nil
@@ -119,7 +121,7 @@ func ValidateSessionNumber(sessionNumber string) error {
 		return err
 	}
 
-	if i < 0 {
+	if i < NO_SESSION_NUMBER {
 		return errors.New("Session numbers cannot be less than 0")
 	}
 
