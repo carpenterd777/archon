@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"io"
 	"strings"
 	"time"
@@ -66,9 +67,10 @@ func (m *MainInterfaceRenderer) Destroy() {
 // Represents the main interface of the application window. Implements the widget.Widget interface.
 type MainInterface struct {
 	widget.BaseWidget
-	session *backend.Session // The state of this application session
-	entry   *gui.EnterEntry  // The entry field
-	window  fyne.Window      // the window this is rendered in
+	session   *backend.Session     // The state of this application session
+	entry     *gui.EnterEntry      // The entry field
+	indicator *gui.SavingIndicator // an indicator that flashes when a save is initiated
+	window    fyne.Window          // the window this is rendered in
 }
 
 // Creates a renderer for the main window. Necessary to implement the widget.Widget inteface.
@@ -84,8 +86,8 @@ func (m *MainInterface) CreateRenderer() fyne.WidgetRenderer {
 		widget.NewToolbarAction(theme.DocumentSaveIcon(), m.Save),
 		widget.NewToolbarAction(theme.FolderOpenIcon(), m.Load),
 	)
-	sep := canvas.NewRectangle(theme.ForegroundColor())
-	toolCont := container.NewVBox(toolbar, sep)
+	m.indicator = gui.NewSavingIndicator()
+	toolCont := container.NewVBox(toolbar, m.indicator)
 
 	cont := container.NewBorder(toolCont, m.entry, nil, nil, list)
 	return &MainInterfaceRenderer{
@@ -111,6 +113,19 @@ func (m *MainInterface) listUpdateItem(i widget.ListItemID, o fyne.CanvasObject)
 	o.(*gui.NoteBox).SetTime(m.session.Notes[i].Time)
 }
 
+func (m *MainInterface) animateIndicator() {
+	disabledToForeground := canvas.NewColorRGBAAnimation(
+		theme.DisabledColor(),
+		theme.ForegroundColor(),
+		canvas.DurationShort,
+		func(c color.Color) {
+			m.indicator.SetColor(c)
+			m.indicator.Refresh()
+		})
+	disabledToForeground.AutoReverse = true
+	disabledToForeground.Start()
+}
+
 func (m *MainInterface) Save() {
 	// if the user has yet to save their work
 	if m.session.Path == "" {
@@ -123,6 +138,7 @@ func (m *MainInterface) Save() {
 		if err != nil {
 			dialog.ShowError(err, m.window)
 		}
+		m.animateIndicator()
 	}
 }
 
