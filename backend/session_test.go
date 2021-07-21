@@ -136,10 +136,10 @@ var _ = Describe("JSON Deserialization", func() {
 		Expect(err).To(Not(BeNil()))
 	})
 
-	It("should return a session with session number 0 if the JSON has a negative session number", func() {
-		data := `{"Notes":[{"Content":"Test string","Time":"2021-07-15T14:38:04.732366749-04:00"}],"Date":"2021-07-15T14:38:04.732366058-04:00","SessionTitle":"Test session","SessionNumber":-1}`
+	It("should return a session with no session number if the JSON has a negative session number", func() {
+		data := `{"Notes":[{"Content":"Test string","Time":"2021-07-15T14:38:04.732366749-04:00"}],"Date":"2021-07-15T14:38:04.732366058-04:00","SessionTitle":"Test session","SessionNumber":-2}`
 		s, _ := FromJSON(data)
-		Expect(s.SessionNumber).To(Equal(0))
+		Expect(s.SessionNumber).To(Equal(NO_SESSION_NUMBER))
 	})
 })
 
