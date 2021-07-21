@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -68,10 +70,13 @@ func (m *MainInterfaceRenderer) Destroy() {
 // Represents the main interface of the application window. Implements the widget.Widget interface.
 type MainInterface struct {
 	widget.BaseWidget
-	session   *backend.Session     // The state of this application session
-	entry     *gui.EnterEntry      // The entry field
-	indicator *gui.SavingIndicator // an indicator that flashes when a save is initiated
-	window    fyne.Window          // the window this is rendered in
+	session     *backend.Session       // The state of this application session
+	entry       *gui.EnterEntry        // The entry field
+	indicator   *gui.SavingIndicator   // an indicator that flashes when a save is initiated
+	infoButton  *widget.Button         // a button containing info for the session
+	boundTitle  binding.ExternalString // a binding for the session title
+	boundNumber binding.String         // a binding for the session number
+	window      fyne.Window            // the window this is rendered in
 }
 
 // Creates a renderer for the main window. Necessary to implement the widget.Widget inteface.
@@ -88,9 +93,18 @@ func (m *MainInterface) CreateRenderer() fyne.WidgetRenderer {
 		widget.NewToolbarAction(theme.FolderOpenIcon(), m.Load),
 	)
 	m.indicator = gui.NewSavingIndicator()
-	toolCont := container.NewVBox(toolbar, m.indicator)
-
-	cont := container.NewBorder(toolCont, m.entry, nil, nil, list)
+	m.BindSessionInfo()
+	m.infoButton = widget.NewButton(
+		m.getInfoButtonText(),
+		m.HandleSessionInfoButton,
+	)
+	cont := container.NewBorder(
+		container.NewVBox(container.NewHBox(toolbar, m.infoButton), m.indicator),
+		m.entry,
+		nil,
+		nil,
+		list,
+	)
 	return &MainInterfaceRenderer{
 		cont: cont,
 		mi:   m,
@@ -140,6 +154,7 @@ func (m *MainInterface) Save() {
 			dialog.ShowError(err, m.window)
 		}
 		m.animateIndicator()
+		m.SetWindowTitle()
 	}
 }
 
@@ -200,7 +215,9 @@ func (m *MainInterface) load(uc fyne.URIReadCloser, e error) {
 		dialog.ShowError(err, m.window)
 	}
 	m.session.Path = uc.URI().Path()
+	m.BindSessionInfo()
 	m.SetWindowTitle()
+	m.infoButton.SetText(m.getInfoButtonText())
 }
 
 // Set the title of the window based on the session title, session number, and path.
@@ -221,6 +238,55 @@ func (m *MainInterface) SetWindowTitle() {
 	}
 	window_title = fmt.Sprintf(window_title+" - %s", APP_NAME)
 	m.window.SetTitle(window_title)
+}
+
+// Builds the string that will serve as the info button text.
+func (m *MainInterface) getInfoButtonText() string {
+	buttonText := m.session.Date.Format("1/2/2006")
+	number, _ := m.boundNumber.Get()
+	title, _ := m.boundTitle.Get()
+	numAsInt, _ := strconv.Atoi(number)
+	if numAsInt > backend.NO_SESSION_NUMBER {
+		buttonText += " Session " + strconv.Itoa(m.session.SessionNumber)
+		if title != "" {
+			buttonText += ":"
+		}
+	}
+	if title != "" {
+		buttonText += " " + m.session.SessionTitle
+	}
+
+	return buttonText
+}
+
+// Handles the actions taken when the session info button is tapped.
+func (m *MainInterface) HandleSessionInfoButton() {
+	titleEntry := widget.NewEntryWithData(m.boundTitle)
+	numberEntry := widget.NewEntryWithData(m.boundNumber)
+	numberEntry.Validator = backend.ValidateSessionNumber
+
+	titleForm := widget.NewFormItem("Session title", titleEntry)
+	numberForm := widget.NewFormItem("Session number", numberEntry)
+	formSize := fyne.NewSize(m.window.Canvas().Size().Width*0.8, m.window.Canvas().Size().Height*0.5)
+	callback := func(confirm bool) {
+		if confirm {
+			number, _ := m.boundNumber.Get()
+			numAsInt, _ := strconv.Atoi(number)
+			if numAsInt != m.session.SessionNumber {
+				m.session.SessionNumber = numAsInt
+			}
+			m.infoButton.SetText(m.getInfoButtonText())
+		}
+	}
+	dialog := dialog.NewForm("", "Confirm", "Cancel", []*widget.FormItem{titleForm, numberForm}, callback, m.window)
+	dialog.Resize(formSize)
+	dialog.Show()
+}
+
+func (m *MainInterface) BindSessionInfo() {
+	m.boundTitle = binding.BindString(&m.session.SessionTitle)
+	m.boundNumber = binding.NewString()
+	m.boundNumber.Set(strconv.Itoa(m.session.SessionNumber))
 }
 
 // Create an interface. This interface composes the entire window.
